@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Pêcher dans les nuages</title>
+<meta name="description" content="Un petit jeu de pêche cosy, dans un océan de nuages, depuis un balcon de Hanoï.">
+<meta name="theme-color" content="#5fa8e8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Nuages">
+<!-- Manifest PWA : le fichier manifest.webmanifest est utilisé s'il existe (GitHub Pages).
+     Si la page est ouverte seule, le script le remplace par un manifest généré à la volée. -->
+<link rel="manifest" id="lien-manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" id="lien-icone-apple" href="icons/icon-192.png">
+<style>
+  :root {
+    --encre: #3b2a1e;
+    --papier: #f3e9d2;
+    --papier-fonce: #e3d3b0;
+    --bois: #f4dca8;
+    --bois-ombre: #d8b06e;
+    --police-pixel: ui-monospace, "Cascadia Mono", "Roboto Mono", "DejaVu Sans Mono", "Courier New", monospace;
+    --police-texte: Georgia, "Noto Serif", "Times New Roman", serif;
+  }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: #14162a;
+    touch-action: manipulation;
+    -webkit-user-select: none; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+  }
+  #scene {
+    position: fixed; display: block;
+    image-rendering: pixelated; image-rendering: crisp-edges;
+  }
+  /* ---------- Boutons « pixel » (bordure crénelée par box-shadow) ---------- */
+  .btn-pixel {
+    font: 700 15px/1 var(--police-pixel);
+    color: var(--encre); background: var(--bois);
+    border: 0; margin: 4px; padding: 11px 14px; cursor: pointer;
+    letter-spacing: .5px;
+    box-shadow:
+      0 4px 0 0 var(--encre), 0 -4px 0 0 var(--encre),
+      4px 0 0 0 var(--encre), -4px 0 0 0 var(--encre),
+      inset 0 -5px 0 0 var(--bois-ombre), inset 0 3px 0 0 #fff4d8;
+  }
+  .btn-pixel:active { transform: translateY(2px); box-shadow:
+      0 4px 0 0 var(--encre), 0 -4px 0 0 var(--encre),
+      4px 0 0 0 var(--encre), -4px 0 0 0 var(--encre),
+      inset 0 5px 0 0 var(--bois-ombre); }
+
+  #bouton-peche {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 26px);
+    font-size: 21px; padding: 17px 24px;
+    display: flex; align-items: center; gap: 14px;
+    min-width: 210px; justify-content: center; white-space: nowrap;
+  }
+  #bouton-peche:active { transform: translateX(-50%) translateY(2px); }
+  /* Interrupteur ON/OFF en pixels */
+  .interrupteur {
+    position: relative; width: 36px; height: 18px; background: #6d6276;
+    box-shadow: 0 2px 0 0 var(--encre), 0 -2px 0 0 var(--encre), 2px 0 0 0 var(--encre), -2px 0 0 0 var(--encre);
+    flex: none;
+  }
+  .interrupteur::after {
+    content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; background: #efe6d6;
+    box-shadow: inset 0 -3px 0 0 #b9ad9c; transition: left .12s steps(3);
+  }
+  .on .interrupteur { background: #5fae63; }
+  .on .interrupteur::after { left: 20px; }
+  #bouton-peche.on { background: #cfe8c0; --bois-ombre: #9cc58a; }
+  #bouton-peche.ferrer { background: #ffb08a; --bois-ombre: #e07a5a; animation: pulse .32s steps(2) infinite; }
+  @keyframes pulse { 50% { filter: brightness(1.12); } }
+
+  #bouton-carnet {
+    position: fixed; left: 10px; bottom: calc(env(safe-area-inset-bottom, 0px) + 30px);
+    font-size: 12px; padding: 8px 9px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    opacity: .92;
+  }
+  #bouton-carnet canvas { width: 32px; height: 24px; image-rendering: pixelated; }
+
+  /* ---------- Bulle de message ---------- */
+  #bulle {
+    position: fixed; left: 50%; transform: translate(-50%, 6px);
+    max-width: 82vw; padding: 8px 12px; text-align: center;
+    font: italic 14px/1.35 var(--police-texte); color: var(--encre); background: var(--papier);
+    box-shadow: 0 3px 0 0 var(--encre), 0 -3px 0 0 var(--encre), 3px 0 0 0 var(--encre), -3px 0 0 0 var(--encre);
+    opacity: 0; transition: opacity .35s, transform .35s; pointer-events: none;
+  }
+  #bulle.visible { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ---------- Surcouches (carte de prise, carnet) ---------- */
+  .voile {
+    position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+    background: rgba(18, 16, 40, .5);
+    padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
+  }
+  .voile.ouvert { display: flex; }
+  .papier {
+    background: var(--papier); color: var(--encre);
+    background-image: repeating-linear-gradient(to bottom, transparent 0 23px, rgba(120, 90, 50, .12) 23px 24px);
+    box-shadow:
+      0 5px 0 0 #5a4030, 0 -5px 0 0 #5a4030, 5px 0 0 0 #5a4030, -5px 0 0 0 #5a4030,
+      inset 0 -6px 0 0 var(--papier-fonce);
+  }
+  .carte { width: min(84vw, 340px); padding: 18px 18px 14px; text-align: center; animation: apparait .35s steps(5); }
+  @keyframes apparait { from { transform: translateY(30px) scale(.9); opacity: 0; } }
+  .etiquette-rarete {
+    display: inline-block; font: 700 12px/1 var(--police-pixel); letter-spacing: 1px; text-transform: uppercase;
+    color: #fff; padding: 5px 8px; margin-bottom: 10px;
+  }
+  .nouveau { display: block; font: 700 12px var(--police-pixel); color: #c4573f; margin-bottom: 6px; letter-spacing: 1px; }
+  .cadre-sprite {
+    display: flex; align-items: center; justify-content: center; height: 132px; margin: 0 auto 12px;
+    box-shadow: 0 3px 0 0 #5a4030, 0 -3px 0 0 #5a4030, 3px 0 0 0 #5a4030, -3px 0 0 0 #5a4030;
+  }
+  .cadre-sprite canvas { image-rendering: pixelated; }
+  .carte h2 { font: 700 19px/1.2 var(--police-pixel); margin: 6px 0 8px; }
+  .carte .desc { font: 15px/1.45 var(--police-texte); margin: 0 0 10px; text-align: left; }
+  .carte .compte { font: 12px var(--police-pixel); opacity: .75; margin: 0 0 12px; }
+
+  .carnet { width: min(94vw, 420px); height: min(88vh, 860px); display: flex; flex-direction: column; }
+  .carnet header {
+    padding: 14px 16px 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    border-bottom: 3px dashed rgba(90, 64, 48, .35);
+  }
+  .carnet header h2 { font: 700 18px var(--police-pixel); margin: 0; flex: 1; }
+  .barre { width: 100%; height: 12px; background: #d8c8a6; box-shadow: 0 2px 0 0 #5a4030, 0 -2px 0 0 #5a4030, 2px 0 0 0 #5a4030, -2px 0 0 0 #5a4030; }
+  .barre > div { height: 100%; background: repeating-linear-gradient(90deg, #6fae5a 0 6px, #8cc777 6px 12px); }
+  .progression { font: 12px var(--police-pixel); width: 100%; }
+  #carnet-liste { overflow-y: auto; padding: 4px 14px 20px; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+  .section { font: 700 13px var(--police-pixel); margin: 16px 0 6px; padding-bottom: 3px; border-bottom: 2px solid; display: flex; justify-content: space-between; }
+  .entree { display: flex; gap: 12px; padding: 9px 0; border-bottom: 1px dotted rgba(90, 64, 48, .3); }
+  .entree .vignette { flex: none; width: 88px; height: 56px; display: flex; align-items: center; justify-content: center; background: rgba(140, 196, 236, .35); }
+  .entree.inconnue .vignette { background: rgba(120, 100, 80, .12); }
+  .entree .vignette canvas { image-rendering: pixelated; }
+  .entree .txt { flex: 1; min-width: 0; }
+  .entree .nom { font: 700 14px var(--police-pixel); }
+  .entree .meta { font: 11px var(--police-pixel); margin: 3px 0 4px; }
+  .entree .d { font: 13.5px/1.4 var(--police-texte); }
+  .entree.inconnue .d { font-style: italic; opacity: .7; }
+
+  /* ---------- Mode paysage : on demande de tourner le téléphone ---------- */
+  #paysage {
+    position: fixed; inset: 0; display: none; align-items: center; justify-content: center; text-align: center;
+    background: #14162a; color: #f3e9d2; font: 16px/1.5 var(--police-pixel); padding: 24px;
+  }
+  @media (orientation: landscape) and (max-height: 520px) { #paysage { display: flex; } }
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas>
+
+<button id="bouton-carnet" class="btn-pixel" aria-label="Ouvrir le carnet"><canvas id="icone-carnet" width="16" height="12"></canvas><span id="compteur-carnet">0/0</span></button>
+<button id="bouton-peche" class="btn-pixel" aria-pressed="false"><span class="interrupteur"></span><span id="libelle-peche">Pêcher</span></button>
+<div id="bulle" role="status" aria-live="polite"></div>
+
+<!-- Carte de prise -->
+<div id="voile-carte" class="voile">
+  <div class="papier carte" role="dialog" aria-modal="true">
+    <span id="carte-nouveau" class="nouveau">✶ NOUVELLE PRISE ✶</span>
+    <span id="carte-rarete" class="etiquette-rarete">Commun</span>
+    <div id="carte-cadre" class="cadre-sprite"><canvas id="carte-sprite"></canvas></div>
+    <h2 id="carte-nom">Nom</h2>
+    <p id="carte-desc" class="desc"></p>
+    <p id="carte-compte" class="compte"></p>
+    <button id="carte-garder" class="btn-pixel">Garder dans le carnet</button>
+  </div>
+</div>
+
+<!-- Carnet de collection -->
+<div id="voile-carnet" class="voile">
+  <div class="papier carnet" role="dialog" aria-modal="true">
+    <header>
+      <h2>Carnet de nuages</h2>
+      <button id="carnet-fermer" class="btn-pixel" aria-label="Fermer">Fermer</button>
+      <div class="progression" id="carnet-progression"></div>
+      <div class="barre"><div id="carnet-barre" style="width:0%"></div></div>
+    </header>
+    <div id="carnet-liste"></div>
+  </div>
+</div>
+
+<div id="paysage">Tourne ton téléphone en portrait :<br>les nuages t'attendent en haut.</div>
+
+<script>
+'use strict';
+/* =====================================================================
+   PÊCHER DANS LES NUAGES
+   Un petit jeu de pêche cosy : on pêche des nuages depuis un balcon de Hanoï.
+
+   Organisation du fichier :
+     1. DONNÉES ÉDITABLES  (réglages, raretés, nuages, objets spéciaux, textes, couleurs)
+     2. Utilitaires
+     3. Sprites (nuages générés par ellipses, objets en ASCII-art)
+     4. Mise en page (canvas basse résolution, pliure du Flip)
+     5. Décor (ciel, balcon) et palette jour/nuit
+     6. Monde (nuages qui dérivent, particules)
+     7. Machine à états de la pêche
+     8. Rendu
+     9. Interface (carte de prise, carnet, sauvegarde, PWA)
+   10. Démarrage
+   ===================================================================== */
+
+
+/* =====================================================================
+   1. DONNÉES ÉDITABLES
+   ===================================================================== */
+
+// ---- Réglages généraux ----
+const CONFIG = {
+  CHANCE_OBJET_SPECIAL: 0.05,  // probabilité qu'une prise soit un objet spécial au lieu d'un nuage (0.05 = 5 %)
+  ATTENTE_MIN_S: 1.6,          // délai minimum après le lancer avant qu'un nuage puisse s'intéresser au bouchon
+  ATTENTE_MAX_S: 13,           // au-delà, un nuage est envoyé exprès vers le bouchon (pour ne jamais attendre trop)
+  CURIOSITE: 0.6,              // probabilité qu'un nuage qui passe près du bouchon s'y intéresse
+  RAYON_X: 22, RAYON_Y: 16,    // distance (en pixels logiques) à laquelle un nuage « remarque » le bouchon
+  GRIGNOTE_MIN_S: 1.0,         // durée de la phase « ça grignote » (taper ici = trop tôt)
+  GRIGNOTE_MAX_S: 2.6,
+  APPARITION_MIN_S: 1.8,       // intervalle entre deux nuages pêchables qui entrent dans le ciel
+  APPARITION_MAX_S: 3.6,
+  MAX_NUAGES: 8,               // nombre max de nuages pêchables à l'écran
+  LARGEUR_LOGIQUE: 150,        // largeur du monde en « gros pixels » (plus petit = pixels plus gros)
+  VIBRATION: true,             // vibration quand ça mord (si le téléphone le permet)
+};
+
+// ---- Raretés ----
+// poids     : fréquence d'apparition relative des nuages de ce rang dans le ciel
+// fenetreMs : durée pendant laquelle on peut ferrer quand ça mord
+// lenteur   : multiplicateur de vitesse (les rares vont plus lentement, on a le temps de les voir)
+// scintille : nombre moyen d'étincelles par seconde autour du nuage
+// ondule    : le nuage flotte de haut en bas ; halo : couleur du contour lumineux
+const RARETES = {
+  commun:     { nom: 'Commun',      poids: 60, couleur: '#8a9bb0', fenetreMs: 1000, lenteur: 1.0, scintille: 0 },
+  peuCommun:  { nom: 'Peu commun',  poids: 25, couleur: '#5f9e63', fenetreMs: 950,  lenteur: 0.95, scintille: 0 },
+  rare:       { nom: 'Rare',        poids: 10, couleur: '#4a86c8', fenetreMs: 850,  lenteur: 0.8, scintille: 1.5, etincelle: '#ffffff' },
+  epique:     { nom: 'Épique',      poids: 4,  couleur: '#9a62c8', fenetreMs: 750,  lenteur: 0.7, scintille: 3, etincelle: '#f3e0ff', ondule: true, halo: '#e8d4ff' },
+  legendaire: { nom: 'Légendaire',  poids: 1,  couleur: '#d99a1e', fenetreMs: 700,  lenteur: 0.6, scintille: 5, etincelle: '#fff1a8', ondule: true, halo: '#ffe58a' },
+};
+const ORDRE_RARETES = ['commun', 'peuCommun', 'rare', 'epique', 'legendaire'];
+const RARETE_OBJET = { nom: 'Objet spécial', couleur: '#c95a78' };
+
+// ---- Les nuages (les « poissons » du jeu) ----
+// heures : [début, fin] en heures locales (ex. [20.5, 5] = de 20h30 à 5h, passe minuit). Absent = toute la journée.
+// forme  : nom du sprite dans FORMES (section 3)
+// indice : petite phrase affichée dans le carnet tant qu'on ne l'a pas pêché (facultatif)
+const NUAGES = [
+  // --- Communs ---
+  { id: 'cumulus', nom: 'Cumulus', rarete: 'commun', forme: 'cumulus',
+    description: "Le nuage que tout le monde dessine quand il a six ans. Il le sait, et il en est discrètement fier." },
+  { id: 'stratus', nom: 'Stratus', rarete: 'commun', forme: 'stratus',
+    description: "Il s'étire comme un dimanche sans projet. Il ne va nulle part, et il y va très lentement." },
+  { id: 'rond', nom: 'Petit nuage tout rond', rarete: 'commun', forme: 'rond',
+    description: "Il a perdu son troupeau quelque part au-dessus du fleuve Rouge. Il ne s'inquiète pas : il en trouvera un autre au prochain coin de ciel." },
+
+  // --- Peu communs ---
+  { id: 'cirrus', nom: 'Cirrus', rarete: 'peuCommun', forme: 'cirrus',
+    description: "Des cheveux d'ange peignés par le vent d'altitude. On dit qu'ils annoncent un changement de temps. Eux n'ont jamais rien confirmé." },
+  { id: 'altocumulus', nom: 'Altocumulus', rarete: 'peuCommun', forme: 'altocumulus',
+    description: "Un ciel pommelé, en écailles. Pour une fois, c'est le nuage qui ressemble à un poisson, et pas l'inverse." },
+  { id: 'mouton', nom: 'Nuage-mouton', rarete: 'peuCommun', forme: 'mouton',
+    description: "Il broute le bleu en silence. Ne le compte pas trop longtemps : tu risquerais de t'endormir sur le balcon, et le café refroidirait." },
+
+  // --- Rares ---
+  { id: 'lenticulaire', nom: 'Nuage lenticulaire', rarete: 'rare', forme: 'lenticulaire',
+    description: "Une pile d'assiettes posée sur le vent, immobile. Les gens le prennent pour une soucoupe volante. Lui se prend pour une lentille de myope." },
+  { id: 'mammatus', nom: 'Mammatus', rarete: 'rare', forme: 'mammatus',
+    description: "Des poches suspendues sous l'orage, comme un plafond qui aurait trop bu de thé glacé. Étrange, rare, et sans doute très doux au toucher." },
+  { id: 'coucher', nom: 'Nuage du soir', rarete: 'rare', forme: 'coucher', heures: [17, 20],
+    indice: "Ne passe qu'à l'heure où le ciel rosit.",
+    description: "Il ne vit qu'une demi-heure par jour, entièrement rose. Il trouve que c'est largement suffisant pour une vie réussie." },
+
+  // --- Épiques ---
+  { id: 'iridescent', nom: 'Nuage iridescent', rarete: 'epique', forme: 'iridescent', heures: [8, 17],
+    indice: "Cherche-le en plein jour, quand le soleil est haut.",
+    description: "Ses gouttelettes plient la lumière en pastel. Un arc-en-ciel qui n'a pas eu la patience d'attendre la pluie." },
+  { id: 'kelvin', nom: 'Vagues de Kelvin-Helmholtz', rarete: 'epique', forme: 'kelvin',
+    description: "Quand deux vents glissent l'un sur l'autre, le ciel se met à faire des rouleaux. Parfois, la physique fait du surf." },
+  { id: 'mousson', nom: 'Nuage de mousson sur Hanoï', rarete: 'epique', forme: 'mousson', heures: [13, 19.5],
+    indice: "Arrive les après-midi lourds, sans prévenir.",
+    description: "Il arrive au-dessus du lac Hoàn Kiếm à cinq heures pile, vide son sac en dix minutes, puis repart comme si de rien n'était. Les scooters ont déjà sorti leurs ponchos." },
+
+  // --- Légendaires ---
+  { id: 'noctulescent', nom: 'Nuage noctulescent', rarete: 'legendaire', forme: 'noctulescent', heures: [20.5, 5],
+    indice: "On ne le voit que la nuit, tout là-haut.",
+    description: "Le plus haut de tous les nuages, à la lisière de l'espace. Il brille encore quand tout le reste dort, comme une pensée qu'on n'arrive pas à éteindre." },
+  { id: 'bibliotheque', nom: 'Le Nuage-Bibliothèque', rarete: 'legendaire', forme: 'bibliotheque',
+    indice: "Un nuage qui n'existe dans aucun manuel.",
+    description: "Il contient tous les livres qu'on a commencés sans jamais les finir. Il en pleut parfois une page, et c'est toujours la bonne." },
+  { id: 'baleine', nom: 'La Baleine aux deux lunes', rarete: 'legendaire', forme: 'baleine', heures: [22, 3.5],
+    indice: "Ne nage que tard dans la nuit, quand le monde se dédouble.",
+    description: "Elle ne passe que dans les ciels où il y a deux lunes. Si tu l'as pêchée, regarde bien autour de toi : tu n'es peut-être plus tout à fait dans le même monde qu'hier." },
+];
+
+// ---- Objets spéciaux (souvenirs du voyage, clins d'œil littéraires) ----
+// sprite : un nom de SPRITES_ASCII (section 3) — disponibles : pho, eggcoffee, poisson, chat, rocher, carte, lanterne, tabouret, livre
+// actif  : mettre false pour retirer un objet du jeu et du carnet
+// retombe: true = l'objet retombe une fois pendant la remontée (Sisyphe)
+const OBJETS_SPECIAUX = [
+  { id: 'pho', nom: 'Bol de phở au tendon', sprite: 'pho', actif: true,
+    description: "Fumant, translucide, parfait. Le tendon fond comme un souvenir de voyage. Personne ne sait comment il est arrivé là-haut, et on ne pose pas de questions à un bon phở." },
+  { id: 'eggcoffee', nom: 'Egg coffee', sprite: 'eggcoffee', actif: true,
+    description: "Une mousse de jaune d'œuf battu sur un café très noir, servie dans un bol d'eau chaude pour qu'elle reste tiède. Le nuage le plus dense du ciel, et de loin le plus sucré." },
+  { id: 'poisson', nom: 'Poisson tombé du ciel', sprite: 'poisson', actif: true,
+    description: "Ce jour-là, il pleuvait des poissons, sans raison particulière. Celui-ci a simplement décidé de remonter. Il ne t'expliquera rien, et c'est peut-être mieux comme ça." },
+  { id: 'chat', nom: 'Chat qui parle', sprite: 'chat', actif: true,
+    description: "Il t'a regardée longuement, puis il a dit : « Tu pêches au mauvais endroit, mais au bon moment. » Ensuite il a réclamé une sardine. Un chat qui parle reste un chat." },
+  { id: 'rocher', nom: 'Rocher qui retombe', sprite: 'rocher', actif: true, retombe: true,
+    description: "Tu l'as remonté. Il est retombé. Tu l'as remonté encore. En le regardant, on ne sait pas trop pourquoi, on se sent d'assez bonne humeur." },
+
+  // --- EMPLACEMENTS À REMPLIR : remplace nom et description par tes propres souvenirs ---
+  { id: 'souvenir1', nom: 'Souvenir n°1', sprite: 'carte', actif: true,
+    description: "(À écrire : un souvenir de Hô Chi Minh-Ville…)" },
+  { id: 'souvenir2', nom: 'Souvenir n°2', sprite: 'lanterne', actif: true,
+    description: "(À écrire : un souvenir de Hanoï…)" },
+  { id: 'souvenir3', nom: 'Souvenir n°3', sprite: 'tabouret', actif: true,
+    description: "(À écrire : une soirée sur les petits tabourets en plastique…)" },
+  { id: 'souvenir4', nom: 'Souvenir n°4', sprite: 'livre', actif: true,
+    description: "(À écrire : un livre, une phrase, une conversation…)" },
+  { id: 'souvenir5', nom: 'Souvenir n°5', sprite: 'carte', actif: true,
+    description: "(À écrire : ce que tu veux qu'elle trouve tout au fond du ciel.)" },
+];
+
+// ---- Textes de l'interface ----
+const TEXTES = {
+  tropTot: [
+    "Trop tôt… le nuage s'est éparpillé en riant.",
+    "Doucement : il ne faisait que goûter.",
+    "Il a eu peur du bruit. Il reviendra.",
+  ],
+  tropTard: [
+    "Trop tard… il a filé avec le vent.",
+    "Il est parti rêver un peu plus loin.",
+    "Raté, mais le ciel est encore plein.",
+  ],
+  rocher: "…et il retombe. Tu le remontes encore.",
+  premiereVisite: "Appuie sur « Pêcher », puis tape l'écran quand le bouchon s'agite.",
+  ferrer: 'FERRER !',
+  pecher: 'Pêcher',
+  enPeche: 'En pêche',
+};
+
+// ---- Couleurs du ciel selon l'heure (images clés, interpolées entre elles) ----
+// h : heure ; nuit : 0 = plein jour, 1 = nuit noire (étoiles, fenêtres allumées, lanterne)
+const PALETTE_HORAIRE = [
+  { h: 0,    cielHaut: '#0b1030', cielBas: '#2a2f5e', teinteNuages: '#5d6694', teinteBalcon: '#4a4f7e', nuit: 1 },
+  { h: 4.5,  cielHaut: '#121a42', cielBas: '#3a3a6e', teinteNuages: '#6a6c9a', teinteBalcon: '#545783', nuit: 0.9 },
+  { h: 5.8,  cielHaut: '#4a5aa0', cielBas: '#e8a0a0', teinteNuages: '#d8b4c4', teinteBalcon: '#b89cac', nuit: 0.3 },
+  { h: 7,    cielHaut: '#6f9ee0', cielBas: '#ffd7b0', teinteNuages: '#fff0e2', teinteBalcon: '#f4e4d6', nuit: 0 },
+  { h: 9,    cielHaut: '#5fa8e8', cielBas: '#c4e6f7', teinteNuages: '#ffffff', teinteBalcon: '#ffffff', nuit: 0 },
+  { h: 16,   cielHaut: '#5aa2e6', cielBas: '#cfe8f5', teinteNuages: '#ffffff', teinteBalcon: '#fffaf2', nuit: 0 },
+  { h: 17.8, cielHaut: '#7a7ad0', cielBas: '#ffb08a', teinteNuages: '#ffd6c6', teinteBalcon: '#ffdcc6', nuit: 0 },
+  { h: 19,   cielHaut: '#4a3f8a', cielBas: '#e07898', teinteNuages: '#c894b2', teinteBalcon: '#a8849c', nuit: 0.35 },
+  { h: 20.5, cielHaut: '#141a40', cielBas: '#352f68', teinteNuages: '#626a98', teinteBalcon: '#4e5280', nuit: 0.95 },
+  { h: 24,   cielHaut: '#0b1030', cielBas: '#2a2f5e', teinteNuages: '#5d6694', teinteBalcon: '#4a4f7e', nuit: 1 }, // = 0h
+];
+
+
+/* =====================================================================
+   2. UTILITAIRES
+   ===================================================================== */
+const rand = (a, b) => a + Math.random() * (b - a);
+const choisir = (t) => t[Math.floor(Math.random() * t.length)];
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const adoucir = (t) => t * t * (3 - 2 * t);
+function mulberry32(a) { // petit générateur pseudo-aléatoire reproductible (décor stable)
+  return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+}
+function hexRgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+function rgbHex(c) { return '#' + ((1 << 24) | (c[0] << 16) | (c[1] << 8) | c[2]).toString(16).slice(1); }
+function melange(a, b, t) { const A = hexRgb(a), B = hexRgb(b); return rgbHex(A.map((v, i) => Math.round(v + (B[i] - v) * t))); }
+function creerCanvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+function ctx2d(c) { const x = c.getContext('2d'); x.imageSmoothingEnabled = false; return x; }
+function rect(c, x, y, w, h, col) { c.fillStyle = col; c.fillRect(x, y, w, h); }
+function disque(c, cx, cy, r, col) { // disque plein en pixels
+  c.fillStyle = col;
+  for (let dy = -r; dy <= r; dy++) { const hw = Math.floor(Math.sqrt(r * r - dy * dy) + 0.3); c.fillRect(cx - hw, cy + dy, hw * 2 + 1, 1); }
+}
+function ellipsePleine(c, cx, cy, rx, ry, col) {
+  c.fillStyle = col;
+  for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++) {
+    const dy = (y + 0.5 - cy) / ry; if (Math.abs(dy) > 1) continue;
+    const hw = rx * Math.sqrt(1 - dy * dy); c.fillRect(Math.round(cx - hw), y, Math.max(1, Math.round(hw * 2)), 1);
+  }
+}
+function ligne(c, x0, y0, x1, y1, col) { // Bresenham
+  c.fillStyle = col; x0 = Math.round(x0); y0 = Math.round(y0); x1 = Math.round(x1); y1 = Math.round(y1);
+  const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0), sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1; let e = dx + dy;
+  for (;;) { c.fillRect(x0, y0, 1, 1); if (x0 === x1 && y0 === y1) break; const e2 = 2 * e;
+    if (e2 >= dy) { e += dy; x0 += sx; } if (e2 <= dx) { e += dx; y0 += sy; } }
+}
+// Teinte un sprite par multiplication en conservant sa transparence
+function teinter(src, couleur) {
+  const c = creerCanvas(src.width, src.height), x = ctx2d(c);
+  x.drawImage(src, 0, 0);
+  x.globalCompositeOperation = 'multiply'; x.fillStyle = couleur; x.fillRect(0, 0, c.width, c.height);
+  x.globalCompositeOperation = 'destination-in'; x.drawImage(src, 0, 0);
+  x.globalCompositeOperation = 'source-over';
+  return c;
+}
+// Silhouette unie d'un sprite (carnet, halos)
+function silhouette(src, couleur) {
+  const c = creerCanvas(src.width, src.height), x = ctx2d(c);
+  x.drawImage(src, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = couleur; x.fillRect(0, 0, c.width, c.height);
+  x.globalCompositeOperation = 'source-over';
+  return c;
+}
+
+
+/* =====================================================================
+   3. SPRITES
+   ===================================================================== */
+
+// ---- Palettes des nuages : reflet (hi), corps (base), ombre, contour ----
+const PALS = {
+  blanc:    { hi: '#ffffff', base: '#eef3fb', ombre: '#c9d3e8', contour: '#98a6c6' },
+  gris:     { hi: '#eef1f6', base: '#d3d9e3', ombre: '#b0b9c8', contour: '#8b95a9' },
+  coucher:  { hi: '#fff1d6', base: '#ffc49c', ombre: '#e98d8f', contour: '#b5607c' },
+  mousson:  { hi: '#c4cad6', base: '#8a93a5', ombre: '#5e6679', contour: '#3d4456' },
+  mamma:    { hi: '#f6e8ee', base: '#dcc7d1', ombre: '#b89eac', contour: '#8a7088' },
+  nocti:    { hi: '#f0fdff', base: '#a6e8ff', ombre: '#62b4ee', contour: null },
+  cirrus:   { hi: '#ffffff', base: '#f4f8ff', ombre: '#e4ecf8', contour: null },
+  lointain: { hi: '#ffffff', base: '#f2f6fc', ombre: '#dde5f2', contour: null },
+};
+
+// ---- Formes des nuages ----
+// l, h : taille du sprite. dessin(f) remplit un masque avec f.ell / f.rect / f.trou / f.px.
+// L'ombrage (reflet en haut, ombre en bas, contour) est calculé automatiquement.
+// deco(d) ajoute des pixels de couleur par-dessus : d.px(x, y, couleur), d.rect(...), d.disque(...), d.dans(x, y), d.haut(x, y).
+const FORMES = {
+  cumulus: { l: 32, h: 18, pal: 'blanc', dessin(f) { f.ell(9, 12, 6, 5); f.ell(16, 8, 8, 7); f.ell(23, 10, 6, 5.5); f.ell(27, 13, 4, 3.5); f.rect(4, 12, 25, 4); } },
+  stratus: { l: 42, h: 10, pal: 'gris', dessin(f) { f.ell(21, 5, 19, 3.2); f.ell(12, 4.5, 9, 3); f.ell(30, 5.5, 10, 2.8); } },
+  rond: { l: 16, h: 15, pal: 'blanc', dessin(f) { f.ell(8, 7.5, 6.5, 6); },
+    deco(d) { d.px(5, 7, '#5a4a5a'); d.px(10, 7, '#5a4a5a'); d.px(4, 9, '#f4a6b8'); d.px(11, 9, '#f4a6b8'); d.px(7, 9, '#7a6070'); d.px(8, 9, '#7a6070'); } },
+  cirrus: { l: 38, h: 13, pal: 'cirrus', alpha: 0.9, dessin(f) {
+    f.rect(3, 4, 18, 1); f.rect(8, 5, 22, 1); f.rect(14, 6, 20, 1); f.rect(5, 8, 14, 1); f.rect(12, 9, 22, 1); f.rect(20, 10, 15, 1);
+    f.rect(20, 3, 3, 1); f.px(23, 2); f.rect(29, 4, 2, 1); f.px(31, 3); f.rect(33, 5, 2, 1); f.px(35, 4); f.rect(33, 8, 2, 1); f.px(35, 7); } },
+  altocumulus: { l: 36, h: 14, pal: 'blanc', dessin(f) {
+    for (let i = 0; i < 6; i++) f.ell(4 + i * 5.6, 5, 2.6, 2.3);
+    for (let i = 0; i < 5; i++) f.ell(7 + i * 5.6, 9.5, 2.6, 2.3); } },
+  mouton: { l: 28, h: 18, pal: 'blanc', dessin(f) { f.ell(14, 7, 7, 5); f.ell(9, 8, 5, 4.5); f.ell(19, 8, 5, 4.5); f.ell(14, 10, 9, 4); f.ell(22, 6, 3, 3); f.ell(7, 6, 3, 3); },
+    deco(d) { d.rect(1, 6, 4, 4, '#5c4b4b'); d.px(2, 7, '#ffffff'); d.px(0, 6, '#5c4b4b'); d.px(3, 10, '#5c4b4b');
+      for (const x of [8, 12, 16, 20]) d.rect(x, 14, 1, 3, '#5c4b4b'); } },
+  lenticulaire: { l: 38, h: 15, pal: 'blanc', dessin(f) { f.ell(19, 11.5, 17, 1.9); f.ell(19, 7.5, 12.5, 1.7); f.ell(19, 3.8, 7.5, 1.6); } },
+  mammatus: { l: 36, h: 17, pal: 'mamma', dessin(f) {
+    f.ell(18, 3, 17, 2.6); f.rect(2, 2, 32, 3);
+    for (const x of [5, 11, 17, 23, 29]) f.ell(x + 0.5, 6.5, 3, 3);
+    for (const x of [8, 14, 20, 26]) f.ell(x + 0.5, 10.5, 2.6, 2.8); } },
+  coucher: { l: 32, h: 16, pal: 'coucher', dessin(f) { f.ell(10, 9, 7, 5); f.ell(18, 7, 8, 5.5); f.ell(25, 10, 5, 4); f.rect(4, 9, 25, 4); },
+    deco(d) { for (let y = 0; y < 16; y++) for (let x = 0; x < 32; x++) if (d.dans(x, y) && d.haut(x, y) && (x + y) % 3 === 0) d.px(x, y, '#ffe9a8'); } },
+  iridescent: { l: 32, h: 16, pal: 'blanc', dessin(f) { f.ell(10, 9, 7, 5); f.ell(17, 7, 8, 6); f.ell(24, 9, 6, 5); f.rect(4, 9, 24, 4); },
+    deco(d) { const arc = ['#ffb3c9', '#ffd6a0', '#fff3a6', '#bff0c4', '#a9dcff', '#d2bcff'];
+      for (let y = 0; y < 16; y++) for (let x = 0; x < 32; x++) if (d.dans(x, y) && !d.haut(x, y)) d.px(x, y, arc[Math.floor((x * 0.8 + y * 1.3) / 2.5) % 6]); } },
+  kelvin: { l: 42, h: 15, pal: 'blanc', dessin(f) {
+    f.rect(1, 10, 40, 3); f.ell(21, 11.5, 20, 2);
+    for (let i = 0; i < 4; i++) { const x0 = 3 + i * 10; f.ell(x0 + 4, 6.5, 4.2, 4); f.trou(x0 + 5, 7.3, 1.7, 1.5); f.rect(x0, 9, 3, 2); f.ell(x0 + 7.5, 3.6, 1.7, 1.4); } } },
+  mousson: { l: 36, h: 26, pal: 'mousson', dessin(f) {
+    f.ell(18, 3, 15, 2.4); f.rect(5, 2, 26, 3); f.ell(18, 9, 8, 6); f.ell(13, 12, 7, 5); f.ell(23, 12, 7, 5); f.ell(18, 15, 15, 3.5); f.rect(3, 14, 30, 3); },
+    deco(d) { for (let x = 5; x < 32; x += 3) for (let y = 19 + (x % 2); y < 25; y += 3) { d.px(x, y, '#9cc0e6'); d.px(x, y + 1, '#9cc0e6'); }
+      d.px(20, 18, '#ffe680'); d.px(19, 19, '#ffe680'); d.px(20, 20, '#ffe680'); d.px(19, 21, '#ffe680'); } },
+  noctulescent: { l: 40, h: 13, pal: 'nocti', lumineux: true, dessin(f) {
+    for (let x = 1; x < 39; x++) { f.rect(x, Math.round(4 + 2 * Math.sin(x / 4)), 1, 2);
+      if (x > 4 && x < 36) f.rect(x, Math.round(8.5 + 1.5 * Math.sin(x / 5 + 1.3)), 1, 1); } },
+    deco(d) { for (const [x, y] of [[6, 2], [17, 1], [28, 11], [34, 3]]) d.px(x, y, '#ffffff'); } },
+  bibliotheque: { l: 32, h: 20, pal: 'blanc', dessin(f) { f.ell(9, 12, 7, 6); f.ell(16, 8, 9, 7.5); f.ell(24, 11, 7, 6); f.rect(3, 12, 26, 5); },
+    deco(d) { const cols = ['#c4573f', '#4f7f6a', '#4a6fa5', '#d9a441', '#8a5aa8', '#c4573f', '#4a6fa5'];
+      let x = 8; for (let i = 0; i < 7; i++) { const hh = 5 + (i % 3 === 1 ? 1 : 0);
+        for (let y = 0; y < hh; y++) { d.px(x, 14 - y, cols[i]); d.px(x + 1, 14 - y, cols[i]); }
+        d.px(x, 14 - hh + 2, '#f4e6c0'); x += 2; if (i === 3) x += 1; }
+      d.rect(7, 15, 18, 1, '#8a6a4a'); } },
+  baleine: { l: 40, h: 18, pal: 'blanc', dessin(f) { f.ell(17, 11, 13, 5.5); f.ell(8, 11, 6.5, 5); f.ell(30, 10, 4, 3); f.ell(34, 6, 2.2, 2.5); f.ell(37, 5, 2.2, 1.6); f.ell(32, 4.5, 1.6, 1.6); },
+    deco(d) { d.px(7, 10, '#3d3a55'); d.rect(3, 13, 6, 1, '#b3bfd8');
+      for (const [x, y] of [[12, 4], [11, 3], [13, 3], [10, 2], [14, 2]]) d.px(x, y, '#bfe3ff');
+      d.disque(21, 2, 1.6, '#fff2b0'); d.disque(26, 2, 1.1, '#c8f0e0'); } },
+
+  // --- Nuages de décor (non pêchables) ---
+  loin1: { l: 16, h: 7, pal: 'lointain', dessin(f) { f.ell(5, 4, 3.5, 2.5); f.ell(10, 3.5, 4, 3); f.rect(2, 4, 12, 2); } },
+  loin2: { l: 22, h: 6, pal: 'lointain', dessin(f) { f.ell(11, 3, 10, 2.2); } },
+  loin3: { l: 12, h: 7, pal: 'lointain', dessin(f) { f.ell(6, 3.5, 4.5, 3); } },
+  brume1: { l: 56, h: 16, pal: 'blanc', dessin(f) { f.ell(14, 10, 12, 5); f.ell(28, 7, 14, 6.5); f.ell(43, 10, 11, 5); f.rect(4, 10, 48, 4); } },
+  brume2: { l: 48, h: 12, pal: 'blanc', dessin(f) { f.ell(24, 6, 22, 4.5); f.ell(14, 5, 10, 4); } },
+};
+
+// ---- Sprites en ASCII-art (objets et décor du balcon) ----
+// Chaque caractère renvoie à une couleur de « pal » ; « . » = transparent.
+const SPRITES_ASCII = {
+  pho: { pal: { o: '#4a3030', w: '#f6f1e7', b: '#4a78b8', y: '#e6a84f', n: '#f8eccb', g: '#5fa04a', t: '#c99a6e', s: '#ffffff', r: '#d8453a' }, l: [
+    '....s...s.......',
+    '.....s...s..s...',
+    '....s...s..s....',
+    '..oooooooooooo..',
+    '.oynnyggynntryo.',
+    '.oyttnnyngnnyyo.',
+    'owwwwwwwwwwwwwwo',
+    'owbwwbwwbwwbwwbo',
+    '.owwwwwwwwwwwwo.',
+    '..owwwwwwwwwwo..',
+    '...oowwwwwwoo...',
+    '.....oooooo.....'] },
+  eggcoffee: { pal: { o: '#5a3a2a', C: '#f2cf72', c: '#9a6a40', w: '#fbf6ee', h: '#a9b8c6', H: '#d6e2ec', s: '#ffffff' }, l: [
+    '.....s..s.......',
+    '......s..s......',
+    '..oooooooooo....',
+    '..oCCcCCCCCo....',
+    '..owwwwwwwwoooo.',
+    '..owwwwwwwwo..o.',
+    '..owwwwwwwwo..o.',
+    '..owwwwwwwwoooo.',
+    '...owwwwwwo.....',
+    'hhhhoooooohhhh..',
+    'hHHHHHHHHHHHHh..',
+    '.hhhhhhhhhhhh...'] },
+  poisson: { pal: { o: '#2d4a66', b: '#7fb6d9', l: '#e8f2f7', T: '#5a90b8', e: '#ffffff' }, l: [
+    '......oo........',
+    '.....obbo.......',
+    '..ooooobbooo..oo',
+    '.obbbbbbbbbbooTo',
+    'obeobbbbbbbbbTTo',
+    'obbbbblllbbbbTTo',
+    '.obbblllllbbooTo',
+    '..ooooooooooo.oo'] },
+  chat: { pal: { o: '#3a2a2a', k: '#e39b4f', e: '#6fc06a', p: '#f08aa0', w: '#ffffff', d: '#3a2a2a' }, l: [
+    '........oooooooo',
+    '.......owwwwwwwo',
+    '.......owdwdwdwo',
+    '.......owwwwwwwo',
+    '.o...o..oowooooo',
+    'oko.oko..o......',
+    'okkokkko........',
+    'okkkkkko........',
+    'okekkeko........',
+    'okkkpkko....oo..',
+    '.okkkko....oko..',
+    '.okkkkoooooko...',
+    'okkkkkkkkkko....',
+    'okkkkkkkkko.....',
+    '.oo.oo..oo......'] },
+  rocher: { pal: { o: '#3b3740', l: '#c9c3cc', r: '#9a94a2', d: '#6d6878', m: '#7fae6a' }, l: [
+    '.....oooooo.....',
+    '...oollllllo....',
+    '..olllrrmrrroo..',
+    '.ollrrrmmrrrrro.',
+    '.olrrrrrrrrrrdo.',
+    'orrrrrrrrrrrrddo',
+    'orrrrrrrrrrrddo.',
+    '.odrrrrrrrdddo..',
+    '..oddddddddoo...',
+    '...oooooooo.....'] },
+  carte: { pal: { o: '#5a4a3a', S: '#8cc4ec', C: '#ffffff', G: '#6fae5a', p: '#f6eedc', r: '#d9534a', l: '#b8a990' }, l: [
+    'oooooooooooooooo',
+    'oSSSSSSSoppppppo',
+    'oSSSCCSSoprrrrpo',
+    'oSSCCCCSoprrrrpo',
+    'oSSSSSSSoppppppo',
+    'oGGSSSGGollllllo',
+    'oGGGGGGGoppppppo',
+    'oGGGGGGGollllllo',
+    'oooooooooooooooo'] },
+  lanterne: { pal: { o: '#5a2a2a', y: '#e8b84a', r: '#d9483b', R: '#f37d5c' }, l: [
+    '..ooo..',
+    '.oyyyo.',
+    'orrrrro',
+    'oRrrrro',
+    'oRrrrro',
+    'orrrrro',
+    '.oyyyo.',
+    '..ooo..',
+    '...y...',
+    '...y...'] },
+  tabouret: { pal: { r: '#d8403a', R: '#f26b5b', d: '#a52b2b' }, l: [
+    'RRRRRRRRRRRRRR',
+    'rrrrrrrrrrrrrr',
+    'dddddddddddddd',
+    'drrrrrrrrrrrrd',
+    'drr.rrrrrr.rrd',
+    'dr...rrrr...rd',
+    'dr....rr....rd',
+    'dr..........rd',
+    'dr..........rd',
+    'dd..........dd'] },
+  livre: { pal: { o: '#4a3828', w: '#fbf4e4', l: '#b9ab94', B: '#c4573f' }, l: [
+    '.oooooo..oooooo.',
+    'owwwwwwoowwwwwwo',
+    'owllllwoowllllwo',
+    'owwwwwwoowwwwwwo',
+    'owllllwoowllllwo',
+    'owwwwwwoowwwwwwo',
+    'owlllwwoowlllwwo',
+    'owwwwwwoowwwwwwo',
+    'oBBBBBBooBBBBBBo',
+    '.ooooooBBoooooo.',
+    '.......oo.......'] },
+  tasse: { pal: { o: '#5a3a2a', C: '#f2cf72', c: '#9a6a40', w: '#fbf6ee', h: '#a9b8c6' }, l: [
+    '.ooooooo..',
+    '.oCCcCCo..',
+    '.owwwwwooo',
+    '.owwwwwo.o',
+    '.owwwwwooo',
+    'hhowwwohhh',
+    '.hhhhhhhh.'] },
+};
+
+// Construit un sprite de nuage à partir d'une forme
+function genererNuage(forme) {
+  const w = forme.l, h = forme.h, pal = PALS[forme.pal];
+  const m = new Uint8Array(w * h);
+  const dans = (x, y) => x >= 0 && y >= 0 && x < w && y < h && m[y * w + x] === 1;
+  const f = {
+    ell(cx, cy, rx, ry, v = 1) {
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const dx = (x + 0.5 - cx) / rx, dy = (y + 0.5 - cy) / ry; if (dx * dx + dy * dy <= 1) m[y * w + x] = v; } },
+    rect(x0, y0, rw, rh, v = 1) { for (let y = y0; y < y0 + rh; y++) for (let x = x0; x < x0 + rw; x++) if (x >= 0 && y >= 0 && x < w && y < h) m[y * w + x] = v; },
+    trou(cx, cy, rx, ry) { this.ell(cx, cy, rx, ry, 0); },
+    px(x, y) { if (x >= 0 && y >= 0 && x < w && y < h) m[y * w + x] = 1; },
+  };
+  forme.dessin(f);
+  // Ombrage automatique
+  const col = new Array(w * h).fill(null);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x;
+    if (m[i]) {
+      if (!dans(x, y - 1)) col[i] = pal.hi;
+      else if (!dans(x, y + 1) || !dans(x, y + 2)) col[i] = pal.ombre;
+      else col[i] = pal.base;
+    } else if (pal.contour && (dans(x - 1, y) || dans(x + 1, y) || dans(x, y - 1) || dans(x, y + 1))) col[i] = pal.contour;
+  }
+  // Décorations
+  if (forme.deco) {
+    const d = {
+      px(x, y, c) { if (x >= 0 && y >= 0 && x < w && y < h) col[y * w + x] = c; },
+      rect(x0, y0, rw, rh, c) { for (let y = y0; y < y0 + rh; y++) for (let x = x0; x < x0 + rw; x++) this.px(x, y, c); },
+      disque(cx, cy, r, c) { for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if ((x + .5 - cx) ** 2 + (y + .5 - cy) ** 2 <= r * r) this.px(x, y, c); },
+      dans, haut: (x, y) => dans(x, y) && !dans(x, y - 1),
+    };
+    forme.deco(d);
+  }
+  const c = creerCanvas(w, h), x = ctx2d(c), img = x.createImageData(w, h);
+  for (let i = 0; i < w * h; i++) if (col[i]) { const [r, g, b] = hexRgb(col[i]); img.data.set([r, g, b, 255], i * 4); }
+  x.putImageData(img, 0, 0);
+  return c;
+}
+function spriteAscii(def) {
+  const h = def.l.length, w = Math.max(...def.l.map(s => s.length));
+  const c = creerCanvas(w, h), x = ctx2d(c);
+  def.l.forEach((ligneTxt, y) => { for (let i = 0; i < ligneTxt.length; i++) { const k = def.pal[ligneTxt[i]]; if (k) rect(x, i, y, 1, 1, k); } });
+  return c;
+}
+
+// Sprites construits au démarrage
+const SPR = { nuages: {}, objets: {}, ascii: {}, decor: {} };
+function construireSprites() {
+  for (const n of NUAGES) SPR.nuages[n.id] = genererNuage(FORMES[n.forme]);
+  for (const k in SPRITES_ASCII) SPR.ascii[k] = spriteAscii(SPRITES_ASCII[k]);
+  for (const o of OBJETS_SPECIAUX) SPR.objets[o.id] = SPR.ascii[o.sprite] || SPR.ascii.carte;
+  for (const k of ['loin1', 'loin2', 'loin3', 'brume1', 'brume2']) SPR.decor[k] = genererNuage(FORMES[k]);
+}
+
+
+/* =====================================================================
+   4. MISE EN PAGE (pixels nets + pliure)
+   ===================================================================== */
+const canvas = document.getElementById('scene');
+const ctx = ctx2d(canvas);
+let W = 150, H = 330;          // taille du monde en pixels logiques
+let SPLIT = 165;               // ligne de séparation ciel / balcon (pixels logiques)
+let ECHELLE_CSS = 2.7, DECALAGE_X = 0, DECALAGE_Y = 0, SPLIT_CSS = 0;
+let G = {};                    // géométrie du balcon (calculée à chaque redimensionnement)
+
+function redimensionner() {
+  const dpr = window.devicePixelRatio || 1;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  // Facteur entier en pixels physiques par pixel logique → pixels parfaitement nets
+  const facteur = Math.max(2, Math.round(vw * dpr / CONFIG.LARGEUR_LOGIQUE));
+  const ancienW = W, ancienSplit = SPLIT;
+  W = Math.ceil(vw * dpr / facteur); H = Math.ceil(vh * dpr / facteur);
+  canvas.width = W; canvas.height = H;
+  ECHELLE_CSS = facteur / dpr;
+  canvas.style.width = (W * ECHELLE_CSS) + 'px'; canvas.style.height = (H * ECHELLE_CSS) + 'px';
+  DECALAGE_X = Math.floor((vw - W * ECHELLE_CSS) / 2); DECALAGE_Y = Math.floor((vh - H * ECHELLE_CSS) / 2);
+  canvas.style.left = DECALAGE_X + 'px'; canvas.style.top = DECALAGE_Y + 'px';
+  ctx.imageSmoothingEnabled = false;
+
+  // Pliure : API Viewport Segments (Chrome) — deux segments empilés = pliure horizontale
+  SPLIT_CSS = vh / 2;
+  try {
+    const segs = window.viewport && window.viewport.segments;
+    if (segs && segs.length === 2 && segs[1].top >= segs[0].bottom - 1) SPLIT_CSS = (segs[0].bottom + segs[1].top) / 2;
+  } catch (e) { /* API absente : partage 50/50 */ }
+  SPLIT = clamp(Math.round((SPLIT_CSS - DECALAGE_Y) / ECHELLE_CSS), Math.round(H * 0.3), Math.round(H * 0.7));
+
+  // Recaler les nuages existants sur la nouvelle taille
+  const kx = W / ancienW, ky = SPLIT / ancienSplit;
+  for (const n of nuages) { n.x *= kx; n.y *= ky; }
+  for (const n of decor) { n.x *= kx; n.y *= ky; }
+
+  calculerGeometrie();
+  construireEtoiles();
+  balconBrut = null; cleBalcon = '';  // forcer la reconstruction des calques
+  majPalette(true);
+  document.getElementById('bulle').style.top = (SPLIT_CSS + 10) + 'px';
+}
+
+function calculerGeometrie() {
+  const BH = H - SPLIT;
+  G.BH = BH;
+  G.rampeHaut = SPLIT + Math.round(BH * 0.34);
+  G.rampeBas = SPLIT + Math.round(BH * 0.6);
+  G.solY = G.rampeBas + 4;
+  G.pointe = { x: Math.round(W * 0.6), y: SPLIT + Math.max(6, Math.round(BH * 0.1)) };  // bout de la canne
+  G.baseCanne = { x: Math.round(W * 0.27), y: G.solY + 10 };
+  G.tabouret = { x: W - 28, y: G.solY + 4 };
+  G.tasse = { x: G.tabouret.x + 2, y: G.tabouret.y - 7 };
+  G.pot = { x: 3, y: G.solY + 3 };
+  G.fils = [
+    [SPLIT + 9, SPLIT + 15, 6], [SPLIT + 13, SPLIT + 21, 8], [SPLIT + 19, SPLIT + 14, 5], [SPLIT + 24, SPLIT + 29, 7],
+  ];
+  const lx = Math.round(W * 0.8);
+  G.lanterne = { x: lx, y: Math.round(yFil(G.fils[1], lx)) + 1 };
+}
+function yFil(f, x) { const t = (x + 2) / (W + 4); return f[0] + (f[1] - f[0]) * t + f[2] * 4 * t * (1 - t); }
+
+
+/* =====================================================================
+   5. DÉCOR : CIEL, BALCON, PALETTE JOUR/NUIT
+   ===================================================================== */
+const params = new URLSearchParams(location.search);
+const HEURE_FORCEE = params.has('h') ? parseFloat(params.get('h')) : null;  // test : index.html?h=19.5
+function heureActuelle() {
+  if (HEURE_FORCEE !== null && !isNaN(HEURE_FORCEE)) return ((HEURE_FORCEE % 24) + 24) % 24;
+  const d = new Date(); return d.getHours() + d.getMinutes() / 60 + d.getSeconds() / 3600;
+}
+function paletteA(h) {
+  const P = PALETTE_HORAIRE; let i = 0;
+  while (i < P.length - 2 && h >= P[i + 1].h) i++;
+  const a = P[i], b = P[i + 1], t = clamp((h - a.h) / (b.h - a.h), 0, 1);
+  return {
+    cielHaut: melange(a.cielHaut, b.cielHaut, t), cielBas: melange(a.cielBas, b.cielBas, t),
+    teinteNuages: melange(a.teinteNuages, b.teinteNuages, t), teinteBalcon: melange(a.teinteBalcon, b.teinteBalcon, t),
+    nuit: lerp(a.nuit, b.nuit, t),
+  };
+}
+let pal = paletteA(12), heure = 12, cleBalcon = '';
+let calqueCiel = null, balconBrut = null, balconTeint = null;
+const cacheTeinte = new Map();
+let fenetres = [];
+
+function majPalette(force) {
+  heure = heureActuelle();
+  const p = paletteA(heure);
+  const cle = p.cielHaut + p.cielBas + p.teinteNuages + p.teinteBalcon + p.nuit.toFixed(2);
+  if (!force && cle === cleBalcon) return;
+  pal = p; cleBalcon = cle;
+  cacheTeinte.clear();
+  construireCiel();
+  if (!balconBrut) { balconBrut = creerCanvas(W, H); dessinerBalcon(ctx2d(balconBrut)); }
+  balconTeint = teinter(balconBrut, pal.teinteBalcon);
+  // Fenêtres allumées la nuit
+  if (pal.nuit > 0.05) {
+    const b = ctx2d(balconTeint); b.globalAlpha = clamp(pal.nuit * 1.1, 0, 1);
+    for (const f of fenetres) if (f.allumee) { rect(b, f.x, f.y, 4, 5, '#ffcf73'); rect(b, f.x, f.y, 4, 1, '#fff0b8'); }
+    b.globalAlpha = 1;
+  }
+  document.querySelector('meta[name=theme-color]').setAttribute('content', pal.cielHaut);
+}
+// Sprite teinté selon l'heure (mis en cache jusqu'au prochain changement de palette)
+function teinte(cle, src, couleur) {
+  let c = cacheTeinte.get(cle); if (!c) { c = teinter(src, couleur); cacheTeinte.set(cle, c); } return c;
+}
+
+// Ciel en dégradé tramé (dithering de Bayer), recalculé quand la palette change
+const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+function construireCiel() {
+  calqueCiel = creerCanvas(W, H);
+  const x = calqueCiel.getContext('2d'), img = x.createImageData(W, H);
+  const N = 12, bandes = [];
+  for (let i = 0; i < N; i++) bandes.push(hexRgb(melange(pal.cielHaut, pal.cielBas, i / (N - 1))));
+  for (let y = 0; y < H; y++) {
+    const v = clamp(y / (SPLIT + 24), 0, 1) * (N - 1), i0 = Math.floor(v), fr = v - i0;
+    for (let xx = 0; xx < W; xx++) {
+      const k = fr * 16 > BAYER[(y & 3) * 4 + (xx & 3)] ? Math.min(N - 1, i0 + 1) : i0;
+      const c = bandes[k], o = (y * W + xx) * 4;
+      img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255;
+    }
+  }
+  x.putImageData(img, 0, 0);
+}
+
+// Le balcon de Hanoï, dessiné une fois (en couleurs « plein jour »), puis teinté selon l'heure
+function dessinerBalcon(c) {
+  const r = mulberry32(17), S = SPLIT;
+  fenetres = [];
+  const coulMaisons = ['#e9c46a', '#e7a9a0', '#9cc5b8', '#f1e3c8', '#c9b6e4', '#e8b77a', '#a9c8e8'];
+  // -- Façades des « maisons-tubes » d'en face --
+  let x = -3;
+  while (x < W) {
+    const lw = 16 + Math.floor(r() * 14);
+    const haut = S + 7 + Math.floor(r() * Math.max(4, G.BH * 0.13));
+    const coul = coulMaisons[Math.floor(r() * coulMaisons.length)];
+    rect(c, x, haut, lw, G.rampeBas - haut, coul);
+    rect(c, x + lw - 1, haut, 1, G.rampeBas - haut, melange(coul, '#000000', 0.15));
+    rect(c, x - 1, haut, lw + 2, 2, melange(coul, '#000000', 0.25)); rect(c, x - 1, haut, lw + 2, 1, melange(coul, '#ffffff', 0.3));
+    for (let fy = haut + 5; fy < G.rampeBas - 6; fy += 9)
+      for (let fx = x + 3; fx < x + lw - 5; fx += 7) {
+        rect(c, fx, fy, 4, 5, '#3d3a4a'); rect(c, fx - 1, fy, 1, 5, '#4f7f6a'); rect(c, fx + 4, fy, 1, 5, '#4f7f6a');
+        fenetres.push({ x: fx, y: fy, allumee: r() < 0.3 });
+      }
+    if (r() < 0.4) { rect(c, x + 3, haut - 4, 5, 4, '#cfd4da'); rect(c, x + 3, haut - 4, 5, 1, '#f0f2f5'); }      // château d'eau
+    if (r() < 0.35) { rect(c, x + lw - 4, haut - 7, 1, 7, '#4a4550'); rect(c, x + lw - 6, haut - 6, 5, 1, '#4a4550'); } // antenne
+    x += lw;
+  }
+  // -- Poteau et fils électriques emmêlés --
+  rect(c, 6, S + 4, 3, G.rampeBas - S - 4, '#6b6570'); rect(c, 6, S + 4, 1, G.rampeBas - S - 4, '#8f8a96');
+  for (const f of G.fils) for (let xx = 0; xx < W; xx++) rect(c, xx, Math.round(yFil(f, xx)), 1, 1, '#2a2630');
+  for (let i = 0; i < 26; i++) rect(c, 4 + Math.floor(r() * 8), S + 10 + Math.floor(r() * 18), 1, 1, '#2a2630'); // nœud de fils
+  ligne(c, 7, S + 12, 3, S + 30, '#2a2630'); ligne(c, 8, S + 14, 14, S + 32, '#2a2630');
+  // -- Bougainvillier qui déborde sur la rambarde --
+  for (let bx = Math.round(W * 0.5); bx < W + 3; bx += 3) {
+    const by = G.rampeHaut - 2 + Math.floor(r() * 4);
+    ellipsePleine(c, bx, by, 2.4, 1.8, r() < 0.5 ? '#3f7a45' : '#4f8f4a');
+    if (r() < 0.8) ellipsePleine(c, bx + r() * 2 - 1, by - 1 + r() * 2, 1.6, 1.3, r() < 0.5 ? '#d94f9a' : '#f07ab8');
+    if (r() < 0.3) rect(c, bx, by + 3 + Math.floor(r() * 4), 1, 2, '#d94f9a');
+  }
+  // -- Garde-corps en fer forgé --
+  const fer = '#2b2733', ferClair = '#55506a';
+  rect(c, 0, G.rampeHaut, W, 3, fer); rect(c, 0, G.rampeHaut, W, 1, ferClair);
+  rect(c, 0, G.rampeBas, W, 2, fer);
+  rect(c, 0, G.rampeBas - 4, W, 1, fer);
+  const anneau = [[1, 0], [2, 0], [0, 1], [3, 1], [0, 2], [3, 2], [1, 3], [2, 3]];
+  const milieu = Math.round((G.rampeHaut + G.rampeBas) / 2) - 3;
+  for (let bx = 0; bx < W; bx += 7) {
+    rect(c, bx, G.rampeHaut + 3, 1, G.rampeBas - G.rampeHaut - 3, fer);
+    for (const [ax, ay] of anneau) rect(c, bx + 2 + ax, milieu + ay, 1, 1, fer);
+    rect(c, bx + 3, milieu - 3, 1, 3, fer); rect(c, bx + 3, milieu + 4, 1, G.rampeBas - 4 - milieu - 4, fer);
+  }
+  // Rebord en béton
+  rect(c, 0, G.rampeBas + 2, W, 2, '#b8ab98'); rect(c, 0, G.rampeBas + 2, W, 1, '#d4c8b4');
+  // -- Sol en carreaux de ciment (motif typique des maisons vietnamiennes) --
+  const carreau = creerCanvas(8, 8), cx2 = carreau.getContext('2d');
+  for (let v = 0; v < 8; v++) for (let u = 0; u < 8; u++) {
+    const d = Math.abs(u - 3.5) + Math.abs(v - 3.5);
+    let col = d < 1.5 ? '#efe4ce' : d < 2.6 ? '#b4553f' : d < 4.6 ? '#efe4ce' : '#6c8aa0';
+    if (u === 7 || v === 7) col = '#cbb99c';
+    rect(cx2, u, v, 1, 1, col);
+  }
+  c.save(); c.translate(0, G.solY); c.fillStyle = c.createPattern(carreau, 'repeat'); c.fillRect(0, 0, W, H - G.solY); c.restore();
+  rect(c, 0, G.solY, W, 3, 'rgba(40,30,30,0.18)');
+  // -- Plante en pot (à gauche) --
+  const P = G.pot;
+  const feuilles = [[4, -6, 5, 3, '#4f8f4a'], [11, -9, 5, 3, '#5fa857'], [6, -14, 4.5, 3, '#6fb35a'], [12, -17, 3.5, 2.5, '#4f8f4a'], [2, -12, 3, 2.5, '#5fa857'], [9, -21, 3, 2, '#6fb35a']];
+  ligne(c, P.x + 7, P.y, P.x + 5, P.y - 13, '#3f6f3a'); ligne(c, P.x + 8, P.y, P.x + 11, P.y - 16, '#3f6f3a'); ligne(c, P.x + 7, P.y, P.x + 9, P.y - 20, '#3f6f3a');
+  for (const [fx, fy, rx, ry, col] of feuilles) { ellipsePleine(c, P.x + fx, P.y + fy, rx, ry, col); rect(c, Math.round(P.x + fx - 1), Math.round(P.y + fy - ry + 1), 2, 1, '#8fcf72'); }
+  rect(c, P.x - 1, P.y, 17, 3, '#d27a48'); rect(c, P.x - 1, P.y, 17, 1, '#e89a68');
+  for (let i = 0; i < 9; i++) { const k = i >> 2; rect(c, P.x + k, P.y + 3 + i, 15 - 2 * k, 1, '#c0643a'); rect(c, P.x + 14 - k - 2, P.y + 3 + i, 2, 1, '#9a4c2a'); }
+  // -- Tabouret en plastique rouge + tasse d'egg coffee --
+  c.drawImage(SPR.ascii.tabouret, G.tabouret.x, G.tabouret.y);
+  c.drawImage(SPR.ascii.tasse, G.tasse.x, G.tasse.y);
+  // -- Canne à pêche appuyée contre la rambarde --
+  const B = G.baseCanne, T = G.pointe;
+  ligne(c, B.x + 1, B.y, T.x + 1, T.y, '#9a6a3e');
+  ligne(c, B.x, B.y, T.x, T.y, '#4e321c');
+  ligne(c, B.x + 1, B.y, lerp(B.x, T.x, 0.5) + 2, lerp(B.y, T.y, 0.5), '#6b4628');
+  ligne(c, B.x, B.y, lerp(B.x, T.x, 0.14), lerp(B.y, T.y, 0.14), '#d6ab70');
+  ligne(c, B.x + 1, B.y, lerp(B.x, T.x, 0.14) + 1, lerp(B.y, T.y, 0.14), '#b98a52');
+  rect(c, B.x + 2, B.y - 7, 4, 4, '#5a5f68'); rect(c, B.x + 3, B.y - 6, 2, 2, '#aab0b8');
+  rect(c, T.x - 1, T.y, 2, 1, '#d8c8a0');
+}
+
+// Étoiles (positions stables)
+let etoiles = [];
+function construireEtoiles() {
+  const r = mulberry32(3); etoiles = [];
+  for (let i = 0; i < 46; i++) etoiles.push({ x: Math.floor(r() * W), y: Math.floor(r() * (SPLIT + 10)), ph: r() * 6.28, v: 0.6 + r() * 2, grande: r() < 0.12 });
+}
+
+
+/* =====================================================================
+   6. MONDE : NUAGES ET PARTICULES
+   ===================================================================== */
+const nuages = [];     // nuages pêchables { def, x, y, vx, phase, etat: 'passe'|'curieux'|'fuit', alpha, verifie }
+const decor = [];      // nuages de décor { cle, x, y, vx, alpha, couche: 'loin'|'pres' }
+const particules = []; // { x, y, vx, vy, vie, vieMax, couleur, type }
+let minuterieApparition = 1, minuterieBrume = 6, minuterieVapeur = 0;
+let temps = 0;
+
+function disponible(def, h) {
+  if (!def.heures) return true;
+  const [a, b] = def.heures;
+  return a <= b ? (h >= a && h < b) : (h >= a || h < b);
+}
+// Tirage pondéré d'un nuage : d'abord la rareté (parmi celles qui ont un nuage disponible à cette heure), puis le nuage
+function tirerNuage() {
+  const candidats = [];
+  for (const r of ORDRE_RARETES) {
+    const liste = NUAGES.filter(n => n.rarete === r && disponible(n, heure));
+    if (liste.length) candidats.push([RARETES[r].poids, liste]);
+  }
+  let total = candidats.reduce((s, c) => s + c[0], 0), x = Math.random() * total;
+  for (const [p, liste] of candidats) { if ((x -= p) < 0) return choisir(liste); }
+  return candidats[0][1][0];
+}
+function faireApparaitreNuage(opts = {}) {
+  const def = tirerNuage(), spr = SPR.nuages[def.id], r = RARETES[def.rarete];
+  const yMax = Math.max(4, SPLIT - spr.height - 3);
+  let y;
+  if (opts.y !== undefined) y = opts.y;
+  else if (jeu.canne && (jeu.etat === 'attente' || jeu.etat === 'lancer') && Math.random() < 0.45) y = cibleBouchon().y - spr.height / 2 + rand(-7, 7);
+  else y = rand(3, yMax);
+  nuages.push({
+    def, x: opts.x !== undefined ? opts.x : -spr.width - 1, y: clamp(y, 2, yMax),
+    vx: (opts.vitesse || rand(4.5, 8.5)) * r.lenteur, phase: rand(0, 6.28),
+    etat: 'passe', alpha: 1, verifie: false, forceCurieux: !!opts.forceCurieux,
+  });
+}
+function faireApparaitreDecor(couche, x) {
+  const cle = couche === 'loin' ? choisir(['loin1', 'loin2', 'loin3']) : choisir(['brume1', 'brume2']);
+  const spr = SPR.decor[cle];
+  decor.push({
+    cle, couche, x: x !== undefined ? x : -spr.width - 1,
+    y: couche === 'loin' ? rand(2, SPLIT * 0.8) : rand(SPLIT * 0.1, SPLIT - spr.height * 0.6),
+    vx: couche === 'loin' ? rand(1.2, 2.6) : rand(13, 19), alpha: couche === 'loin' ? rand(0.45, 0.7) : rand(0.28, 0.42),
+  });
+}
+function particule(p) { particules.push(Object.assign({ vx: 0, vy: 0, vie: 1, couleur: '#ffffff', type: 'px' }, p, { vieMax: p.vie || 1 })); }
+function bouffee(x, y, n, couleur = '#ffffff') {
+  for (let i = 0; i < n; i++) { const a = rand(0, 6.28), v = rand(6, 22); particule({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.7, vie: rand(0.35, 0.8), couleur }); }
+}
+
+function majMonde(dt) {
+  // Nouveaux nuages pêchables
+  minuterieApparition -= dt;
+  if (minuterieApparition <= 0) {
+    minuterieApparition = rand(CONFIG.APPARITION_MIN_S, CONFIG.APPARITION_MAX_S) * (jeu.canne ? 1 : 1.3);
+    if (nuages.length < CONFIG.MAX_NUAGES) faireApparaitreNuage();
+  }
+  // Décor : nuages lointains permanents, brumes de premier plan de temps en temps
+  if (decor.filter(d => d.couche === 'loin').length < 6 && Math.random() < dt * 0.4) faireApparaitreDecor('loin');
+  minuterieBrume -= dt;
+  if (minuterieBrume <= 0) { minuterieBrume = rand(9, 20); faireApparaitreDecor('pres'); }
+
+  for (let i = decor.length - 1; i >= 0; i--) { const d = decor[i]; d.x += d.vx * dt; if (d.x > W + 2) decor.splice(i, 1); }
+
+  for (let i = nuages.length - 1; i >= 0; i--) {
+    const n = nuages[i], spr = SPR.nuages[n.def.id], r = RARETES[n.def.rarete];
+    if (n.etat === 'passe') n.x += n.vx * dt;
+    else if (n.etat === 'curieux') {   // il s'approche doucement du bouchon
+      const b = cibleBouchon(), k = Math.min(1, dt * 1.3);
+      n.x += (b.x - spr.width / 2 - n.x) * k; n.y += (b.y - spr.height / 2 + 1 - n.y) * k;
+    } else if (n.etat === 'fuit') { n.x += 28 * dt; n.y -= 3 * dt; n.alpha -= dt * 0.9; }
+    if (r.scintille && n.alpha > 0.5 && Math.random() < dt * r.scintille)
+      particule({ x: n.x + rand(2, spr.width - 2), y: n.y + rand(1, spr.height - 2), vy: -2, vie: 0.8, couleur: r.etincelle, type: 'etincelle' });
+    if (n.x > W + 2 || n.alpha <= 0) nuages.splice(i, 1);
+  }
+  // Vapeur de l'egg coffee
+  minuterieVapeur -= dt;
+  if (minuterieVapeur <= 0) { minuterieVapeur = rand(0.25, 0.5); particule({ x: G.tasse.x + 3 + rand(0, 3), y: G.tasse.y - 1, vy: -3.5, vx: rand(-0.6, 0.6), vie: 2.2, couleur: '#ffffff', type: 'vapeur' }); }
+
+  for (let i = particules.length - 1; i >= 0; i--) {
+    const p = particules[i]; p.vie -= dt; if (p.vie <= 0) { particules.splice(i, 1); continue; }
+    p.x += p.vx * dt; p.y += p.vy * dt;
+    if (p.type === 'vapeur') p.vx = Math.sin(temps * 2 + p.y * 0.4) * 1.5;
+    else { p.vx *= 1 - dt * 2; p.vy *= 1 - dt * 2; }
+  }
+}
+
+
+/* =====================================================================
+   7. MACHINE À ÉTATS DE LA PÊCHE
+   repos → lancer → attente → grignote → touche → remontee → carte → (lancer…)
+                                  ↓ (trop tôt)  ↓ (trop tard)
+                               attente       attente
+   rembobine : quand on range la canne
+   ===================================================================== */
+const jeu = {
+  canne: false, etat: 'repos', minuterie: 0, attente: 0, envoye: false, trempe: 0,
+  bouchon: { x: 0, y: 0, fx: 0.5, fy: 0.5 }, depart: { x: 0, y: 0 },
+  nuage: null, prise: null, remontee: null,
+};
+const cibleBouchon = () => ({ x: Math.round(jeu.bouchon.fx * W), y: Math.round(jeu.bouchon.fy * SPLIT) });
+
+function lancer() {
+  jeu.bouchon.fx = rand(0.24, 0.76); jeu.bouchon.fy = rand(0.32, 0.72);
+  jeu.etat = 'lancer'; jeu.minuterie = 0; jeu.envoye = false;
+  for (const n of nuages) n.verifie = false;
+}
+function basculerCanne() {
+  if (jeu.etat === 'touche') { taper(); return; }        // pendant la touche, le gros bouton sert à ferrer
+  jeu.canne = !jeu.canne;
+  if (jeu.canne) { if (jeu.etat === 'repos' || jeu.etat === 'rembobine') lancer(); }
+  else if (['lancer', 'attente', 'grignote'].includes(jeu.etat)) {
+    if (jeu.nuage) { jeu.nuage.etat = 'fuit'; jeu.nuage = null; }
+    jeu.depart = { x: jeu.bouchon.x, y: jeu.bouchon.y }; jeu.etat = 'rembobine'; jeu.minuterie = 0;
+  }
+  majBouton(); sauverReglages();
+}
+// Tape sur l'écran
+function taper() {
+  if (jeu.etat === 'grignote') rater('tropTot');
+  else if (jeu.etat === 'touche') ferrer();
+}
+function rater(raison) {
+  if (jeu.nuage) { jeu.nuage.etat = 'fuit'; jeu.nuage = null; }
+  bulle(choisir(TEXTES[raison]));
+  jeu.etat = 'attente'; jeu.attente = 0; jeu.envoye = false;
+  majBouton();
+}
+function ferrer() {
+  const n = jeu.nuage; jeu.nuage = null;
+  const i = nuages.indexOf(n); if (i >= 0) nuages.splice(i, 1);
+  const spr = SPR.nuages[n.def.id];
+  bouffee(n.x + spr.width / 2, n.y + spr.height / 2, 14);
+  const objets = OBJETS_SPECIAUX.filter(o => o.actif !== false);
+  if (objets.length && Math.random() < CONFIG.CHANCE_OBJET_SPECIAL) {
+    const o = choisir(objets);
+    jeu.prise = { def: o, special: true, sprite: SPR.objets[o.id] };
+    bouffee(jeu.bouchon.x, jeu.bouchon.y, 10, '#ffe9a8');
+  } else jeu.prise = { def: n.def, special: false, sprite: spr };
+  jeu.prise.infos = enregistrerPrise(jeu.prise.def.id);
+  jeu.remontee = { p: 0, chute: false, aRetombe: false, retombe: !!jeu.prise.def.retombe, depart: { x: jeu.bouchon.x, y: jeu.bouchon.y } };
+  jeu.etat = 'remontee';
+  majBouton();
+}
+function vibrer(motif) { if (!CONFIG.VIBRATION) return; try { navigator.vibrate && navigator.vibrate(motif); } catch (e) { } }
+
+function majJeu(dt) {
+  const b = jeu.bouchon, cible = cibleBouchon();
+  switch (jeu.etat) {
+    case 'repos': b.x = G.pointe.x; b.y = G.pointe.y; break;
+
+    case 'lancer': {   // le bouchon s'envole en arc jusque dans les nuages
+      jeu.minuterie += dt; const k = Math.min(1, jeu.minuterie / 0.75), e = 1 - (1 - k) * (1 - k);
+      b.x = lerp(G.pointe.x, cible.x, e); b.y = lerp(G.pointe.y, cible.y, e) - Math.sin(Math.PI * k) * 18;
+      if (k >= 1) { jeu.etat = 'attente'; jeu.attente = 0; bouffee(cible.x, cible.y, 8); }
+      break;
+    }
+    case 'attente': {
+      b.x = cible.x; b.y = cible.y + Math.round(Math.sin(temps * 2.2));
+      jeu.attente += dt;
+      if (jeu.attente > CONFIG.ATTENTE_MIN_S) {
+        for (const n of nuages) {
+          if (n.etat !== 'passe' || n.verifie) continue;
+          const spr = SPR.nuages[n.def.id];
+          const dx = Math.abs(n.x + spr.width / 2 - cible.x), dy = Math.abs(n.y + spr.height / 2 - cible.y);
+          if (dx < CONFIG.RAYON_X + spr.width * 0.2 && dy < CONFIG.RAYON_Y) {
+            n.verifie = true;
+            if (n.forceCurieux || Math.random() < CONFIG.CURIOSITE) {
+              n.etat = 'curieux'; jeu.nuage = n; jeu.etat = 'grignote';
+              jeu.minuterie = rand(CONFIG.GRIGNOTE_MIN_S, CONFIG.GRIGNOTE_MAX_S) + 0.8; break;
+            }
+          }
+        }
+      }
+      // Personne ne vient ? On envoie un nuage exprès vers le bouchon
+      if (jeu.etat === 'attente' && !jeu.envoye && jeu.attente > CONFIG.ATTENTE_MAX_S) {
+        jeu.envoye = true; const tmp = tirerNuage(); const h = SPR.nuages[tmp.id].height;
+        faireApparaitreNuage({ y: cible.y - h / 2, vitesse: 14, forceCurieux: true });
+      }
+      break;
+    }
+    case 'grignote': {   // le nuage s'approche et goûte : petites secousses (taper ici = trop tôt)
+      jeu.minuterie -= dt; jeu.trempe -= dt;
+      if (jeu.minuterie < 1.6 && jeu.trempe < -0.25 && Math.random() < dt * 3) { jeu.trempe = 0.12; }
+      b.x = cible.x; b.y = cible.y + (jeu.trempe > 0 ? 1 : 0) + Math.round(Math.sin(temps * 2.2) * 0.6);
+      if (jeu.minuterie <= 0) {
+        jeu.etat = 'touche'; jeu.minuterie = RARETES[jeu.nuage.def.rarete].fenetreMs / 1000;
+        vibrer([45, 40, 60]); bouffee(cible.x, cible.y, 6, '#fff3c0'); majBouton();
+      }
+      if (!jeu.nuage || jeu.nuage.etat !== 'curieux') { jeu.etat = 'attente'; jeu.attente = 0; }
+      break;
+    }
+    case 'touche': {     // ça mord ! fenêtre pour ferrer
+      jeu.minuterie -= dt;
+      b.x = cible.x + (Math.floor(temps * 22) % 2 ? 1 : -1); b.y = cible.y + 2;
+      if (jeu.minuterie <= 0) rater('tropTard');
+      break;
+    }
+    case 'remontee': {   // la prise descend le long de la ligne jusqu'au balcon
+      const R = jeu.remontee;
+      if (R.chute) { R.p -= dt * 1.6; if (R.p <= 0) { R.p = 0; R.chute = false; R.aRetombe = true; bouffee(R.depart.x, R.depart.y, 8, '#c9c3cc'); } }
+      else {
+        R.p += dt / (R.aRetombe ? 1.9 : 1.5);
+        if (R.retombe && !R.aRetombe && R.p >= 0.8) { R.chute = true; bulle(TEXTES.rocher); }
+        if (R.p >= 1) { R.p = 1; jeu.etat = 'carte'; afficherCarte(jeu.prise); }
+      }
+      const e = adoucir(clamp(R.p, 0, 1));
+      b.x = lerp(R.depart.x, G.pointe.x, e); b.y = lerp(R.depart.y, G.pointe.y + 4, e);
+      break;
+    }
+    case 'carte': b.x = G.pointe.x; b.y = G.pointe.y; break;
+
+    case 'rembobine': {
+      jeu.minuterie += dt; const k = Math.min(1, jeu.minuterie / 0.6), e = adoucir(k);
+      b.x = lerp(jeu.depart.x, G.pointe.x, e); b.y = lerp(jeu.depart.y, G.pointe.y, e);
+      if (k >= 1) jeu.etat = 'repos';
+      break;
+    }
+  }
+}
+
+
+/* =====================================================================
+   8. RENDU
+   ===================================================================== */
+function dessiner() {
+  const c = ctx;
+  c.globalAlpha = 1; c.globalCompositeOperation = 'source-over';
+  c.drawImage(calqueCiel, 0, 0);
+
+  // --- Le ciel (moitié haute) ---
+  c.save(); c.beginPath(); c.rect(0, 0, W, SPLIT + 30); c.clip();
+  dessinerAstres(c);
+  for (const d of decor) if (d.couche === 'loin') { c.globalAlpha = d.alpha; c.drawImage(teinte(d.cle, SPR.decor[d.cle], pal.teinteNuages), Math.round(d.x), Math.round(d.y)); }
+  c.globalAlpha = 1;
+  for (const n of nuages) dessinerNuage(c, n);
+  for (const d of decor) if (d.couche === 'pres') { c.globalAlpha = d.alpha; c.drawImage(teinte(d.cle, SPR.decor[d.cle], pal.teinteNuages), Math.round(d.x), Math.round(d.y)); }
+  c.globalAlpha = 1;
+  c.restore();
+
+  // --- Le balcon (moitié basse) ---
+  c.drawImage(balconTeint, 0, 0);
+  dessinerLanterne(c);
+
+  // --- Ligne, bouchon, prise ---
+  dessinerLigne(c);
+  if (jeu.etat === 'remontee') {
+    const s = jeu.prise.sprite, sp = jeu.prise.special ? s : teinte('n:' + jeu.prise.def.id, s, pal.teinteNuages);
+    c.drawImage(sp, Math.round(jeu.bouchon.x - s.width / 2), Math.round(jeu.bouchon.y - s.height / 2));
+  } else if (jeu.etat !== 'repos' && jeu.etat !== 'carte') dessinerBouchon(c);
+
+  // --- Particules ---
+  for (const p of particules) {
+    const a = clamp(p.vie / p.vieMax, 0, 1), x = Math.round(p.x), y = Math.round(p.y);
+    c.fillStyle = p.couleur;
+    if (p.type === 'vapeur') { c.globalAlpha = a * 0.45; c.fillRect(x, y, 1, 1); }
+    else if (p.type === 'etincelle') {
+      const pic = a > 0.3 && a < 0.7; c.globalAlpha = 0.9;
+      c.fillRect(x, y, 1, 1); if (pic) { c.fillRect(x - 1, y, 1, 1); c.fillRect(x + 1, y, 1, 1); c.fillRect(x, y - 1, 1, 1); c.fillRect(x, y + 1, 1, 1); }
+    } else { c.globalAlpha = a; c.fillRect(x, y, 1, 1); }
+  }
+  c.globalAlpha = 1;
+}
+
+function dessinerAstres(c) {
+  const h = heure;
+  // Soleil : arc de 5h40 à 19h10
+  if (h > 5.6 && h < 19.2) {
+    const p = (h - 5.6) / (19.2 - 5.6), x = Math.round(W * (0.12 + 0.76 * p));
+    const y = Math.round(SPLIT * 0.95 - Math.sin(Math.PI * p) * SPLIT * 0.75);
+    const col = melange('#fff6c8', '#ff9a60', clamp((1 - Math.sin(Math.PI * p)) * 1.6 - 0.4, 0, 1));
+    c.globalAlpha = 0.25; disque(c, x, y, 7, col); c.globalAlpha = 1; disque(c, x, y, 4, col);
+  }
+  if (pal.nuit > 0.02) {
+    // Étoiles qui scintillent
+    for (const e of etoiles) {
+      c.globalAlpha = pal.nuit * (0.45 + 0.55 * Math.sin(temps * e.v + e.ph) ** 2);
+      rect(c, e.x, e.y, 1, 1, '#fffbe8');
+      if (e.grande && Math.sin(temps * e.v + e.ph) > 0.7) { rect(c, e.x - 1, e.y, 3, 1, '#fffbe8'); rect(c, e.x, e.y - 1, 1, 3, '#fffbe8'); }
+    }
+    // Lune
+    c.globalAlpha = pal.nuit;
+    const lx = Math.round(W * 0.8), ly = Math.round(SPLIT * 0.16);
+    c.globalAlpha = pal.nuit * 0.2; disque(c, lx, ly, 7, '#f3efd6');
+    c.globalAlpha = pal.nuit; disque(c, lx, ly, 4, '#f3efd6');
+    rect(c, lx - 2, ly - 1, 2, 2, '#d8d2b4'); rect(c, lx + 1, ly + 2, 1, 1, '#d8d2b4');
+    c.globalAlpha = 1;
+  }
+}
+
+function dessinerNuage(c, n) {
+  const brut = SPR.nuages[n.def.id], r = RARETES[n.def.rarete], forme = FORMES[n.def.forme];
+  const ond = r.ondule && n.etat === 'passe' ? Math.sin(temps * 0.9 + n.phase) * 1.6 : 0;
+  const x = Math.round(n.x), y = Math.round(n.y + ond);
+  if (r.halo) {   // contour lumineux qui pulse pour les épiques / légendaires
+    const halo = cacheHalo(n.def.id, brut, r.halo);
+    c.globalAlpha = n.alpha * (0.35 + 0.3 * Math.sin(temps * 3 + n.phase));
+    c.drawImage(halo, x - 1, y); c.drawImage(halo, x + 1, y); c.drawImage(halo, x, y - 1); c.drawImage(halo, x, y + 1);
+  }
+  c.globalAlpha = n.alpha * (forme.alpha || 1);
+  c.drawImage(forme.lumineux ? brut : teinte('n:' + n.def.id, brut, pal.teinteNuages), x, y);
+  c.globalAlpha = 1;
+}
+const halos = new Map();
+function cacheHalo(id, src, coul) { let h = halos.get(id); if (!h) { h = silhouette(src, coul); halos.set(id, h); } return h; }
+
+function dessinerLanterne(c) {
+  const L = G.lanterne, osc = Math.round(Math.sin(temps * 1.3) * 1);
+  if (pal.nuit > 0.05) {   // halo chaud la nuit
+    c.globalAlpha = 0.12 * pal.nuit; disque(c, L.x + osc, L.y + 8, 10, '#ffb060');
+    c.globalAlpha = 0.22 * pal.nuit; disque(c, L.x + osc, L.y + 8, 6, '#ffc070'); c.globalAlpha = 1;
+  }
+  ligne(c, L.x, L.y, L.x + osc, L.y + 2, '#2a2630');
+  const spr = SPR.ascii.lanterne;
+  c.drawImage(teinte('lanterne', spr, melange(pal.teinteBalcon, '#ffffff', pal.nuit * 0.6)), L.x + osc - 3, L.y + 3);
+}
+
+function dessinerLigne(c) {
+  const T = G.pointe, b = jeu.bouchon;
+  c.fillStyle = pal.nuit > 0.5 ? 'rgba(235,240,255,0.7)' : 'rgba(255,255,255,0.8)';
+  if (jeu.etat === 'repos' || jeu.etat === 'carte') {   // ligne pendante avec l'hameçon
+    c.fillRect(T.x, T.y + 1, 1, 5); rect(c, T.x, T.y + 6, 1, 1, '#c0c6cc'); rect(c, T.x + 1, T.y + 5, 1, 1, '#c0c6cc');
+    return;
+  }
+  // Courbe quadratique (légèrement détendue, tendue pendant la touche)
+  const tendue = jeu.etat === 'touche' || jeu.etat === 'remontee';
+  const ax = b.x, ay = jeu.etat === 'remontee' ? b.y : b.y - 3;
+  const mx = (T.x + ax) / 2 + (tendue ? 0 : 5), my = (T.y + ay) / 2 + (tendue ? 0 : 6);
+  const n = Math.ceil(Math.hypot(ax - T.x, ay - T.y) * 1.2);
+  for (let i = 0; i <= n; i++) {
+    const t = i / n, u = 1 - t;
+    c.fillRect(Math.round(u * u * T.x + 2 * u * t * mx + t * t * ax), Math.round(u * u * T.y + 2 * u * t * my + t * t * ay), 1, 1);
+  }
+}
+
+function dessinerBouchon(c) {
+  const x = Math.round(jeu.bouchon.x), y = Math.round(jeu.bouchon.y);
+  rect(c, x, y - 3, 1, 1, '#e04a3a'); rect(c, x - 1, y - 2, 3, 2, '#e04a3a'); rect(c, x - 1, y - 2, 1, 1, '#ff8a70');
+  rect(c, x - 1, y, 3, 1, '#fafafa'); rect(c, x, y + 1, 1, 1, '#fafafa');
+  if (jeu.etat === 'touche' && Math.floor(temps * 8) % 2 === 0) {   // « ! » au-dessus du bouchon
+    rect(c, x - 1, y - 13, 3, 7, '#3b2a1e'); rect(c, x - 1, y - 5, 3, 3, '#3b2a1e');
+    rect(c, x, y - 12, 1, 5, '#fff3c0'); rect(c, x, y - 4, 1, 1, '#fff3c0');
+  }
+}
+
+
+/* =====================================================================
+   9. INTERFACE : BOUTONS, BULLE, CARTE, CARNET, SAUVEGARDE, PWA
+   ===================================================================== */
+const el = (id) => document.getElementById(id);
+const boutonPeche = el('bouton-peche');
+
+function majBouton() {
+  boutonPeche.classList.toggle('on', jeu.canne);
+  boutonPeche.classList.toggle('ferrer', jeu.etat === 'touche');
+  boutonPeche.setAttribute('aria-pressed', String(jeu.canne));
+  el('libelle-peche').textContent = jeu.etat === 'touche' ? TEXTES.ferrer : (jeu.canne ? TEXTES.enPeche : TEXTES.pecher);
+}
+let minuterieBulle = 0;
+function bulle(texte, ms = 2600) {
+  const b = el('bulle'); b.textContent = texte; b.classList.add('visible');
+  clearTimeout(minuterieBulle); minuterieBulle = setTimeout(() => b.classList.remove('visible'), ms);
+}
+
+// ---- Sauvegarde (localStorage, toujours dans un try/catch) ----
+const CLE_SAUVEGARDE = 'pecher-dans-les-nuages:v1';
+let sauvegarde = { prises: {}, reglages: {} };
+function charger() {
+  try {
+    const s = localStorage.getItem(CLE_SAUVEGARDE);
+    if (s) { const o = JSON.parse(s); if (o && typeof o === 'object') sauvegarde = { prises: o.prises || {}, reglages: o.reglages || {} }; }
+  } catch (e) { /* stockage indisponible : on joue sans sauvegarde */ }
+}
+function sauver() { try { localStorage.setItem(CLE_SAUVEGARDE, JSON.stringify(sauvegarde)); } catch (e) { } }
+function sauverReglages() { sauvegarde.reglages.vu = true; sauver(); }
+function enregistrerPrise(id) {
+  const avant = sauvegarde.prises[id] || 0;
+  sauvegarde.prises[id] = avant + 1; sauver(); majCompteurCarnet();
+  return { nouveau: avant === 0, compte: avant + 1 };
+}
+function toutesLesEntrees() { return [...NUAGES, ...OBJETS_SPECIAUX.filter(o => o.actif !== false)]; }
+function completion() {
+  const tout = toutesLesEntrees(); const faits = tout.filter(e => sauvegarde.prises[e.id] > 0).length;
+  return { faits, total: tout.length };
+}
+function majCompteurCarnet() { const c = completion(); el('compteur-carnet').textContent = `${c.faits}/${c.total}`; }
+
+// Dessine un sprite agrandi (pixels nets) dans un canvas d'interface
+function vignette(canvasEl, src, tailleMax, silh) {
+  const k = Math.max(1, Math.floor(tailleMax / Math.max(src.width, src.height)));
+  canvasEl.width = src.width * k; canvasEl.height = src.height * k;
+  const x = ctx2d(canvasEl); x.clearRect(0, 0, canvasEl.width, canvasEl.height);
+  x.drawImage(silh ? silhouette(src, '#b3a78f') : src, 0, 0, canvasEl.width, canvasEl.height);
+}
+const rareteDe = (def) => def.rarete ? RARETES[def.rarete] : RARETE_OBJET;
+
+// ---- Carte de prise ----
+function afficherCarte(prise) {
+  const def = prise.def, r = rareteDe(def);
+  el('carte-rarete').textContent = r.nom; el('carte-rarete').style.background = r.couleur;
+  el('carte-nouveau').style.display = prise.infos.nouveau ? 'block' : 'none';
+  el('carte-nom').textContent = def.nom;
+  el('carte-desc').textContent = def.description;
+  el('carte-compte').textContent = prise.infos.nouveau ? 'Première prise !' : `Pêché ${prise.infos.compte} fois`;
+  el('carte-cadre').style.background = `linear-gradient(${pal.cielHaut}, ${pal.cielBas})`;
+  el('carte-cadre').style.width = 'min(70vw, 260px)';
+  vignette(el('carte-sprite'), prise.sprite, 200);
+  if (prise.infos.nouveau) vibrer(25);
+  el('voile-carte').classList.add('ouvert');
+}
+function fermerCarte() {
+  el('voile-carte').classList.remove('ouvert');
+  if (jeu.etat !== 'carte') return;
+  if (jeu.canne) lancer(); else jeu.etat = 'repos';
+  majBouton();
+}
+
+// ---- Carnet de collection ----
+function ouvrirCarnet() {
+  const liste = el('carnet-liste'); liste.innerHTML = '';
+  const c = completion();
+  el('carnet-progression').textContent = `${c.faits} / ${c.total} prises découvertes — ${Math.round(100 * c.faits / c.total)} %`;
+  el('carnet-barre').style.width = (100 * c.faits / c.total) + '%';
+  const sections = ORDRE_RARETES.map(r => [RARETES[r], NUAGES.filter(n => n.rarete === r)]);
+  sections.push([RARETE_OBJET, OBJETS_SPECIAUX.filter(o => o.actif !== false)]);
+  for (const [r, entrees] of sections) {
+    if (!entrees.length) continue;
+    const nb = entrees.filter(e => sauvegarde.prises[e.id] > 0).length;
+    const t = document.createElement('div'); t.className = 'section'; t.style.borderColor = r.couleur; t.style.color = r.couleur;
+    t.innerHTML = `<span>${r.nom}</span><span>${nb}/${entrees.length}</span>`; liste.appendChild(t);
+    for (const e of entrees) {
+      const n = sauvegarde.prises[e.id] || 0, connu = n > 0;
+      const div = document.createElement('div'); div.className = 'entree' + (connu ? '' : ' inconnue');
+      const v = document.createElement('div'); v.className = 'vignette'; const cv = document.createElement('canvas'); v.appendChild(cv);
+      vignette(cv, e.rarete ? SPR.nuages[e.id] : SPR.objets[e.id], 80, !connu);
+      const txt = document.createElement('div'); txt.className = 'txt';
+      const nom = document.createElement('div'); nom.className = 'nom'; nom.textContent = connu ? e.nom : '???';
+      const meta = document.createElement('div'); meta.className = 'meta'; meta.style.color = r.couleur;
+      meta.textContent = connu ? `${r.nom} · pêché ${n} fois` : r.nom;
+      const d = document.createElement('div'); d.className = 'd';
+      d.textContent = connu ? e.description : (e.indice || 'Pas encore pêché.');
+      txt.append(nom, meta, d); div.append(v, txt); liste.appendChild(div);
+    }
+  }
+  el('voile-carnet').classList.add('ouvert'); liste.scrollTop = 0;
+}
+
+// ---- PWA : manifest de secours généré à la volée + service worker si présent ----
+function dessinerIcone(marge) {   // icône 32×32 pixel art (marge > 0 pour la version « maskable »)
+  const T = 32 + marge * 2, c = creerCanvas(T, T), x = ctx2d(c);
+  const img = x.createImageData(T, T);
+  for (let y = 0; y < T; y++) for (let xx = 0; xx < T; xx++) {
+    const v = (y / (T - 1)) * 7, i0 = Math.floor(v), k = (v - i0) * 16 > BAYER[(y & 3) * 4 + (xx & 3)] ? i0 + 1 : i0;
+    const col = hexRgb(melange('#5fa8e8', '#ffc0b0', clamp(k / 7, 0, 1))); img.data.set([...col, 255], (y * T + xx) * 4);
+  }
+  x.putImageData(img, 0, 0);
+  const nuage = genererNuage({ l: 26, h: 15, pal: 'blanc', dessin(f) { f.ell(8, 9, 5.5, 4.5); f.ell(13, 6.5, 6.5, 5.5); f.ell(19, 9, 5, 4.5); f.rect(3, 9, 20, 4); } });
+  x.drawImage(nuage, marge + 3, marge + 5);
+  ligne(x, marge + 25, marge + 31, marge + 16, marge + 22, 'rgba(255,255,255,0.9)');
+  rect(x, marge + 15, marge + 18, 3, 2, '#e04a3a'); rect(x, marge + 16, marge + 17, 1, 1, '#e04a3a'); rect(x, marge + 15, marge + 20, 3, 1, '#fafafa');
+  return c;
+}
+function iconePNG(taille, marge) {
+  const src = dessinerIcone(marge), c = creerCanvas(taille, taille), x = ctx2d(c);
+  x.drawImage(src, 0, 0, taille, taille); return c.toDataURL('image/png');
+}
+async function installerPWA() {
+  let fichierPresent = false;
+  if (location.protocol.startsWith('http')) {
+    try { const r = await fetch('manifest.webmanifest', { cache: 'no-store' }); fichierPresent = r.ok; } catch (e) { }
+  }
+  if (!fichierPresent) {
+    const debut = location.href.split('#')[0];
+    const manifest = {
+      name: 'Pêcher dans les nuages', short_name: 'Nuages', start_url: debut, scope: debut.replace(/[^/]*$/, ''),
+      display: 'standalone', orientation: 'portrait', background_color: '#14162a', theme_color: '#5fa8e8', lang: 'fr',
+      icons: [
+        { src: iconePNG(192, 0), sizes: '192x192', type: 'image/png', purpose: 'any' },
+        { src: iconePNG(512, 0), sizes: '512x512', type: 'image/png', purpose: 'any' },
+        { src: iconePNG(512, 5), sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      ],
+    };
+    el('lien-manifest').href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest));
+    el('lien-icone-apple').href = iconePNG(180, 0);
+  } else if ('serviceWorker' in navigator) {
+    try { navigator.serviceWorker.register('sw.js').catch(() => { }); } catch (e) { }
+  }
+}
+
+
+/* =====================================================================
+   10. DÉMARRAGE ET BOUCLE DE JEU
+   ===================================================================== */
+function demarrer() {
+  charger();
+  construireSprites();
+  vignette(el('icone-carnet'), SPR.ascii.livre, 16);
+  redimensionner();
+  // Le ciel n'est jamais vide au lancement
+  for (let i = 0; i < 4; i++) faireApparaitreNuage({ x: rand(-10, W - 20) });
+  for (let i = 0; i < 5; i++) faireApparaitreDecor('loin', rand(-10, W));
+  majBouton(); majCompteurCarnet();
+  if (!sauvegarde.reglages.vu) setTimeout(() => bulle(TEXTES.premiereVisite, 5000), 800);
+
+  // Entrées
+  boutonPeche.addEventListener('click', (e) => { e.stopPropagation(); basculerCanne(); });
+  el('bouton-carnet').addEventListener('click', (e) => { e.stopPropagation(); ouvrirCarnet(); });
+  el('carnet-fermer').addEventListener('click', () => el('voile-carnet').classList.remove('ouvert'));
+  el('voile-carnet').addEventListener('click', (e) => { if (e.target === el('voile-carnet')) el('voile-carnet').classList.remove('ouvert'); });
+  el('carte-garder').addEventListener('click', fermerCarte);
+  el('voile-carte').addEventListener('click', (e) => { if (e.target === el('voile-carte')) fermerCarte(); });
+  // Taper n'importe où sur la scène pour ferrer (réagit dès le contact, pour être précis)
+  window.addEventListener('pointerdown', (e) => { if (e.target.closest('button, .voile')) return; taper(); });
+
+  window.addEventListener('resize', redimensionner);
+  if (window.viewport && 'onsegmentschange' in window.viewport) window.viewport.addEventListener('segmentschange', redimensionner);
+  installerPWA();
+
+  let dernier = performance.now(), minuteriePalette = 0;
+  function boucle(t) {
+    const dt = Math.min(0.05, Math.max(0, (t - dernier) / 1000)); dernier = t; temps += dt;
+    minuteriePalette -= dt; if (minuteriePalette <= 0) { minuteriePalette = 10; majPalette(false); }
+    majMonde(dt); majJeu(dt); dessiner();
+    requestAnimationFrame(boucle);
+  }
+  requestAnimationFrame(boucle);
+}
+// Accès de test depuis la console : window.PDN
+window.PDN = { jeu, nuages, CONFIG, ouvrirCarnet, faireApparaitreNuage, ferrer, sauvegarde: () => sauvegarde, dessinerIcone };
+demarrer();
+</script>
+</body>
+</html>
