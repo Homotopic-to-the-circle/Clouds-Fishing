@@ -1,6 +1,6 @@
 // Service worker : rend le jeu jouable hors-ligne une fois installé.
 // Change VERSION à chaque mise à jour du jeu pour forcer le rafraîchissement du cache.
-const VERSION = 'nuages-v3';
+const VERSION = 'nuages-v4';
 const FICHIERS = ['./', './index.html', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 
