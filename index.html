@@ -118,7 +118,7 @@
   }
   .cadre-sprite canvas { image-rendering: pixelated; }
   .carte h2 { font: 400 24px/1.2 var(--police-pixel); text-shadow: 2px 2px 0 rgba(90,64,48,.25); margin: 6px 0 8px; }
-  .carte .desc { font: 16px/1.6 var(--police-texte); margin: 0 0 10px; text-align: left; }
+  .carte .desc { font: 16px/1.6 var(--police-texte); margin: 0 0 10px; text-align: justify; hyphens: auto; -webkit-hyphens: auto; }
   .carte .compte { font: 16px var(--police-pixel); opacity: .75; margin: 0 0 12px; }
 
   .carnet { width: min(94vw, 420px); height: min(88vh, 860px); display: flex; flex-direction: column; }
@@ -139,7 +139,7 @@
   .entree .txt { flex: 1; min-width: 0; }
   .entree .nom { font: 16px var(--police-pixel); }
   .entree .meta { font: 16px var(--police-pixel); margin: 3px 0 4px; }
-  .entree .d { font: 16px/1.5 var(--police-texte); }
+  .entree .d { font: 16px/1.5 var(--police-texte); text-align: justify; hyphens: auto; -webkit-hyphens: auto; }
   .entree.inconnue .d { opacity: .7; }
 
   /* ---------- Mode paysage : on demande de tourner le téléphone ---------- */
