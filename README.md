@@ -36,3 +36,7 @@ Après une modification publiée sur GitHub Pages, incrémenter `VERSION` dans `
 
 ## Tester une heure précise
 Ajouter `?h=` à l'adresse : `index.html?h=19.5` (coucher de soleil), `?h=23` (nuit), `?h=6` (aube).
+
+## Police
+La police pixel `CloudBlocks` (style blocs, dessin original) est générée par `outils/police.py` et intégrée en base64 dans `index.html`.
+Pour modifier une lettre : éditer le tableau `G` du script, puis `python3 outils/police.py` (nécessite `pip install fonttools`).
