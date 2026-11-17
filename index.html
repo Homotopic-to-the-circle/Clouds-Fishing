@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Fishing in the Clouds</title>
+<meta name="description" content="A cosy little fishing game: catch clouds from a balcony in Hanoi.">
+<meta name="theme-color" content="#5fa8e8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Clouds">
+<!-- Manifest PWA : le fichier manifest.webmanifest est utilisé s'il existe (GitHub Pages).
+     Si la page est ouverte seule, le script le remplace par un manifest généré à la volée. -->
+<link rel="manifest" id="lien-manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" id="lien-icone-apple" href="icons/icon-192.png">
+<style>
+  /* POLICE-DEBUT : police pixel générée par outils/police.py (ne pas éditer à la main) */
+  @font-face { font-family: 'CloudBlocks'; src: url(data:font/ttf;base64,AAEAAAAKAIAAAwAgT1MvMsULDBQAAAEoAAAAYGNtYXDCT8fyAAADSAAAAUpnbHlmY+NJLQAABXgAAC9maGVhZDBF2XIAAACsAAAANmhoZWEGWwPaAAAA5AAAACRobXR4J+YAAAAAAYgAAAG+bG9jYbJivo4AAASUAAAA5G1heHAAgQA+AAABCAAAACBuYW1lyLnd2gAANOAAAABscG9zdDRDIL0AADVMAAADngABAAAAAQAAskyIaV8PPPUAAQPoAAAAAOchStIAAAAA5yFK0gAA/4MC7gNrAAAAAwACAAAAAAAAAAEAAANr/4MAAANrAAAAfQLuAAEAAAAAAAAAAAAAAAAAAABuAAEAAABxADwADwAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAwKsAZAABQAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACgAAALAACAAAAAAAAAAAAAPz8/PwAAACAnNgNr/4MAAANrAH0AAAAAAAAAAAAAAAAAAAAgAAAB9AAAAfQAAALuAAAC7gAAAu4AAALuAAAC7gAAAu4AAALuAAAC7gAAAfQAAALuAAAC7gAAAu4AAALuAAAC7gAAAu4AAALuAAAC7gAAAu4AAALuAAAC7gAAAu4AAALuAAAC7gAAAu4AAALuAAAC7gAAAu4AAALuAAAC7gAAAu4AAALuAAACcQAAAu4AAALuAAAA+gAAAnEAAAJxAAABdwAAAu4AAALuAAAC7gAAAu4AAALuAAAC7gAAAu4AAAH0AAAC7gAAAu4AAALuAAAC7gAAAu4AAALuAAAC7gAAAu4AAALuAAAC7gAAAu4AAALuAAAC7gAAAu4AAALuAAAC7gAAAPoAAALuAAAA+gAAAPoAAAD6AAAA+gAAAPoAAAH0AAACcQAAAu4AAAH0AAAB9AAAAu4AAALuAAAC7gAAAu4AAALuAAAC7gAAAnEAAAJxAAAA+gAAAu4AAANrAAADawAAA2sAAALuAAAC7gAAAu4AAALuAAAC7gAAAu4AAALuAAAC7gAAAu4AAALuAAAC7gAAAu4AAALuAAAC7gAAAu4AAALuAAAC7gAAAu4AAALuAAAC7gAAAfQAAAAAAAAAAAAAAAAAAgAAAAMAAAAUAAMAAQAAABQABAE2AAAAMgAgAAQAEgAjACUALwA5AD8AWgBfAHoAoAC3ANcA5ADvAPYA/AGhHr8e0R7fIBQgGSAdICYnNv//AAAAIAAlACcAMAA6AEEAXwBhAKAAtwDXAOAA6ADyAPkBoR6/HtEe3yATIBggHCAmJzb//wAAACgAAAAGAAD/wf/w/7v/Yf+d/1wAAAAAAAAAAP624ZrhieF5AAAAAAAA4C/ZGAABADIAAAA2AAAARAAAAAAAAAAAAAAAAABCAEoAWABgAAAAAAAAAAAAXgBgAGIAAAAAAAAAAQBAAEcAUABGAEoASwBOAEkAQwBIAEIATABEAEUAUgBRAFMAQQBcAFsAXQBfAF4AYQBgAGIAYwBuAG0AbwBwAGUAZABmAGgAZwBqAGkAawBsAEgAVgBGAEYARwBHAAAAAAAAAAAATQCUAM8BGwFKAXkBvwIQAj4CcwLDAvADSgOkA/EEJgR3BMME+AUmBXcFxwYhBnAGqAbWBwAHRAd0B7oH5AgTCEkIkgi5CO0JLwlbCaMJ3QoTClYKmQrGCuoLFwtRC4oLzQwFDEAMYwyzDOENFg1RDZENxg4BDjQOfA63Dt4PDA8XDycPOQ9QD2EPfQ+JD60P2RAFEDMQaxCkELAQ7xECES4RWRFlEXoRhhHHEhISTRKUEsoS/xM6E28TrxPlFBoUVRSKFMsVCxVRFZIV3hYlFmsWthb8FykXVReHF7MADAAAAAACcQNrAAMABwALAA8AEwAXABsAHwAjACcAKwAvAAATNSEVBTUzFSE1MxUFNTMVITUzFQU1IRUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxV9AXf+DH0Bd339j30Bd339jwJx/Y99AXd9/Y99AXd9/Y99AXd9Au59fX19fX19fX19fX19fX19fX19fX19fX19fX19fX0AAAsAAAAAAnEDawADAAcACwAPABMAFwAbAB8AIwAnACsAABE1IRUFNTMVITUzFQU1IRUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxUFNSEVAfT+DH0Bd339jwH0/gx9AXd9/Y99AXd9/Y99AXd9/Y8B9ALufX19fX19fX19fX19fX19fX19fX19fX19fX19fQAJAAAAAAJxA2sAAwAHAAsADwATABcAGwAfACMAABM1IRUFNTMVITUzFQU1MxUHNTMVBzUzFQc1MxUhNTMVBTUhFX0Bd/4MfQF3ff2PfX19fX19fQF3ff4MAXcC7n19fX19fX19fX19fX19fX19fX19fX19fQAADAAAAAACcQNrAAMABwALAA8AEwAXABsAHwAjACcAKwAvAAARNSEVBTUzFSE1MxUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxUFNTMVITUzFQU1IRUB9P4MfQF3ff2PfQF3ff2PfQF3ff2PfQF3ff2PfQF3ff2PAfQC7n19fX19fX19fX19fX19fX19fX19fX19fX19fX19fQAHAAAAAAJxA2sAAwAHAAsADwATABcAGwAAETUhFQU1MxUHNSEVBTUzFQc1MxUHNTMVBzUhFQJx/Y99fQF3/ol9fX19fX0CcQLufX19fX19fX19fX19fX19fX19fX0ABwAAAAACcQNrAAMABwALAA8AEwAXABsAABE1IRUFNTMVBzUhFQU1MxUHNTMVBzUzFQc1MxUCcf2PfX0Bd/6JfX19fX19fQLufX19fX19fX19fX19fX19fX19fX0AAAsAAAAAAnEDawADAAcACwAPABMAFwAbAB8AIwAnACsAABM1IRUFNTMVBzUzFTM1MxUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxUFNSEVfQH0/Y99fX36+v2PfQF3ff2PfQF3ff2PfQF3ff4MAXcC7n19fX19fX19fX19fX19fX19fX19fX19fX19fX0ADQAAAAACcQNrAAMABwALAA8AEwAXABsAHwAjACcAKwAvADMAABE1MxUhNTMVBTUzFSE1MxUFNSEVBTUzFSE1MxUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxV9AXd9/Y99AXd9/Y8Ccf2PfQF3ff2PfQF3ff2PfQF3ff2PfQF3fQLufX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX0ABwAAAAABdwNrAAMABwALAA8AEwAXABsAABE1IRUHNTMVBzUzFQc1MxUHNTMVBzUzFQc1IRUBd/p9fX19fX19fX36AXcC7n19fX19fX19fX19fX19fX19fX19AAAIAAAAAAJxA2sAAwAHAAsADwATABcAGwAfAAABNTMVBzUzFQc1MxUHNTMVBzUzFQU1MxUhNTMVBTUhFQH0fX19fX19fX19/Y99AXd9/gwBdwLufX19fX19fX19fX19fX19fX19fX19fQAADQAAAAACcQNrAAMABwALAA8AEwAXABsAHwAjACcAKwAvADMAABE1MxUhNTMVBTUzFTM1MxUFNSEVBTUzFTM1MxUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxV9AXd9/Y99+n3+DAF3/ol9+n3+DH0Bd339j30Bd339j30Bd30C7n19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19AAcAAAAAAnEDawADAAcACwAPABMAFwAbAAARNTMVBzUzFQc1MxUHNTMVBzUzFQc1MxUHNSEVfX19fX19fX19fX19AnEC7n19fX19fX19fX19fX19fX19fX19AA8AAAAAAnEDawADAAcACwAPABMAFwAbAB8AIwAnACsALwAzADcAOwAAETUzFSE1MxUFNTMVMzUzFQU1MxUzNTMVMzUzFQU1MxUhNTMVBTUzFSE1MxUFNTMVITUzFQU1MxUhNTMVfQF3ff2P+n36/Y99fX19ff2PfQF3ff2PfQF3ff2PfQF3ff2PfQF3fQLufX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19AA8AAAAAAnEDawADAAcACwAPABMAFwAbAB8AIwAnACsALwAzADcAOwAAETUzFSE1MxUFNTMVMzUzFQU1MxUzNTMVMzUzFQU1MxUzNTMVBTUzFSE1MxUFNTMVITUzFQU1MxUhNTMVfQF3ff2P+vp9/Y99fX19ff2Pffr6/Y99AXd9/Y99AXd9/Y99AXd9Au59fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX0AAAwAAAAAAnEDawADAAcACwAPABMAFwAbAB8AIwAnACsALwAAEzUhFQU1MxUhNTMVBTUzFSE1MxUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxUFNSEVfQF3/gx9AXd9/Y99AXd9/Y99AXd9/Y99AXd9/Y99AXd9/gwBdwLufX19fX19fX19fX19fX19fX19fX19fX19fX19fX19AAAIAAAAAAJxA2sAAwAHAAsADwATABcAGwAfAAARNSEVBTUzFSE1MxUFNSEVBTUzFQc1MxUHNTMVBzUzFQH0/gx9AXd9/Y8B9P4MfX19fX19fQLufX19fX19fX19fX19fX19fX19fX19fQAADQAAAAACcQNrAAMABwALAA8AEwAXABsAHwAjACcAKwAvADMAABM1IRUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxUFNTMVITUzFQU1MxUzNTMVBTUzFTM1MxV9AXf+DH0Bd339j30Bd339j30Bd339j30Bd339j336ff6J+n19Au59fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fQAADAAAAAACcQNrAAMABwALAA8AEwAXABsAHwAjACcAKwAvAAARNSEVBTUzFSE1MxUFNSEVBTUzFSE1MxUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxUB9P4MfQF3ff2PAfT+DH0Bd339j30Bd339j30Bd339j30Bd30C7n19fX19fX19fX19fX19fX19fX19fX19fX19fX19fQAIAAAAAAJxA2sAAwAHAAsADwATABcAGwAfAAATNSEVBTUzFRU1IRUVNTMVBzUzFQU1MxUhNTMVBTUhFX0B9P2PfQF3fX19/Y99AXd9/gwBdwLufX19fX19fX19fX19fX19fX19fX19fQAABwAAAAACcQNrAAMABwALAA8AEwAXABsAABE1IRUFNTMVBzUzFQc1MxUHNTMVBzUzFQc1MxUCcf6JfX19fX19fX19fX0C7n19fX19fX19fX19fX19fX19fX19AAANAAAAAAJxA2sAAwAHAAsADwATABcAGwAfACMAJwArAC8AMwAAETUzFSE1MxUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxUFNTMVITUzFQU1MxUhNTMVBTUhFX0Bd339j30Bd339j30Bd339j30Bd339j30Bd339j30Bd33+DAF3Au59fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fQANAAAAAAJxA2sAAwAHAAsADwATABcAGwAfACMAJwArAC8AMwAAETUzFSE1MxUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxUFNTMVITUzFQU1MxUzNTMVBzUzFX0Bd339j30Bd339j30Bd339j30Bd339j30Bd33+DH19ffp9Au59fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fQAADwAAAAACcQNrAAMABwALAA8AEwAXABsAHwAjACcAKwAvADMANwA7AAARNTMVITUzFQU1MxUhNTMVBTUzFSE1MxUFNTMVITUzFQU1MxUzNTMVMzUzFQU1MxUzNTMVBTUzFSE1MxV9AXd9/Y99AXd9/Y99AXd9/Y99AXd9/Y99fX19ff2P+n36/Y99AXd9Au59fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX0ADQAAAAACcQNrAAMABwALAA8AEwAXABsAHwAjACcAKwAvADMAABE1MxUhNTMVBTUzFTM1MxUHNTMVBzUzFTM1MxUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxV9AXd9/gx9fX36ffp9fX3+DH0Bd339j30Bd339j30Bd30C7n19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19AAAJAAAAAAJxA2sAAwAHAAsADwATABcAGwAfACMAABE1MxUhNTMVBTUzFTM1MxUHNTMVBzUzFQc1MxUHNTMVBzUzFX0Bd33+DH19ffp9fX19fX19fX0C7n19fX19fX19fX19fX19fX19fX19fX19fQAABwAAAAACcQNrAAMABwALAA8AEwAXABsAABE1IRUHNTMVBzUzFQc1MxUHNTMVBzUzFQc1IRUCcX19+n36ffp9+n19AnEC7n19fX19fX19fX19fX19fX19fX19AAAGAAAAAAJxAnEAAwAHAAsADwATABcAABM1IRUVNTMVBTUhFQU1MxUhNTMVBTUhFX0Bd33+DAH0/Y99AXd9/gwB9AH0fX19fX19fX19fX19fX19fQALAAAAAAJxA2sAAwAHAAsADwATABcAGwAfACMAJwArAAARNTMVBzUzFQc1MxUzNTMVBTUzFTM1MxUFNTMVITUzFQU1MxUhNTMVBTUhFX19fX19ffr+DPr6ff2PfQF3ff2PfQF3ff2PAfQC7n19fX19fX19fX19fX19fX19fX19fX19fX19fX0ABwAAAAACcQJxAAMABwALAA8AEwAXABsAABM1IRUFNTMVITUzFQU1MxUHNTMVITUzFQU1IRV9AXf+DH0Bd339j319fQF3ff4MAXcB9H19fX19fX19fX19fX19fX19fQAACwAAAAACcQNrAAMABwALAA8AEwAXABsAHwAjACcAKwAAATUzFQc1MxUFNTMVMzUzFQU1MxUzNTMVBTUzFSE1MxUFNTMVITUzFQU1IRUB9H19ff4M+n19/Y99+vr9j30Bd339j30Bd33+DAH0Au59fX19fX19fX19fX19fX19fX19fX19fX19fX19AAAGAAAAAAJxAnEAAwAHAAsADwATABcAABM1IRUFNTMVITUzFQU1IRUFNTMVFTUhFX0Bd/4MfQF3ff2PAnH9j30B9AH0fX19fX19fX19fX19fX19fQAHAAAAAAH0A2sAAwAHAAsADwATABcAGwAAEzUzFQU1MxUHNSEVBTUzFQc1MxUHNTMVBzUzFfr6/ol9+gH0/ol9fX19fX19Au59fX19fX19fX19fX19fX19fX19fQAACAAA/4MCcQJxAAMABwALAA8AEwAXABsAHwAAEzUhFQU1MxUhNTMVBTUzFSE1MxUFNSEVBzUzFQU1IRV9AfT9j30Bd339j30Bd33+DAH0fX39jwH0AfR9fX19fX19fX19fX19fX19fX19fX0ADAAAAAACcQNrAAMABwALAA8AEwAXABsAHwAjACcAKwAvAAARNTMVBzUzFQc1MxUzNTMVBTUzFTM1MxUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxV9fX19fX36/gz6+n39j30Bd339j30Bd339j30Bd30C7n19fX19fX19fX19fX19fX19fX19fX19fX19fX19fQAGAAAAAAB9A2sAAwAHAAsADwATABcAABE1MxUHNTMVBzUzFQc1MxUHNTMVBzUzFX19fX19fX19fX19Au59ffp9fX19fX19fX19fX19fQAIAAD/gwH0A2sAAwAHAAsADwATABcAGwAfAAABNTMVBzUzFQc1MxUHNTMVBzUzFQU1MxUzNTMVBTUzFQF3fX19fX19fX19/gx9+n3+ifoC7n19+n19fX19fX19fX19fX19fX19fX0AAAsAAAAAAfQDawADAAcACwAPABMAFwAbAB8AIwAnACsAABE1MxUHNTMVBzUzFTM1MxUFNTMVMzUzFQU1MxUHNTMVMzUzFQU1MxUzNTMVfX19fX36ff4MfX19/on6+n19ff6Jffp9Au59fX19fX19fX19fX19fX19fX19fX19fX19fX19AAcAAAAAAPoDawADAAcACwAPABMAFwAbAAARNTMVBzUzFQc1MxUHNTMVBzUzFQc1MxUVNTMVfX19fX19fX19fX19Au59fX19fX19fX19fX19fX19fX19fQAMAAAAAAJxAnEAAwAHAAsADwATABcAGwAfACMAJwArAC8AABE1MxUzNTMVBTUzFTM1MxUzNTMVBTUzFTM1MxUzNTMVBTUzFSE1MxUFNTMVITUzFfp9ff4MfX19fX39j319fX19/Y99AXd9/Y99AXd9AfR9fX19fX19fX19fX19fX19fX19fX19fX19fX19AAAJAAAAAAJxAnEAAwAHAAsADwATABcAGwAfACMAABE1IRUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxUFNTMVITUzFQH0/gx9AXd9/Y99AXd9/Y99AXd9/Y99AXd9AfR9fX19fX19fX19fX19fX19fX19fX19AAgAAAAAAnECcQADAAcACwAPABMAFwAbAB8AABM1IRUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxUFNSEVfQF3/gx9AXd9/Y99AXd9/Y99AXd9/gwBdwH0fX19fX19fX19fX19fX19fX19fX0AAAsAAP+DAnECcQADAAcACwAPABMAFwAbAB8AIwAnACsAABE1MxUzNTMVBTUzFTM1MxUFNTMVITUzFQU1MxUzNTMVBTUzFTM1MxUFNTMVfX36/gz6+n39j30Bd339j/r6ff2PfX36/gx9AfR9fX19fX19fX19fX19fX19fX19fX19fX19fX0ACwAA/4MCcQJxAAMABwALAA8AEwAXABsAHwAjACcAKwAAEzUzFTM1MxUFNTMVMzUzFQU1MxUhNTMVBTUzFTM1MxUFNTMVMzUzFQc1MxV9+n19/Y99+vr9j30Bd339j336+v4M+n19fX0B9H19fX19fX19fX19fX19fX19fX19fX19fX19fQAHAAAAAAJxAnEAAwAHAAsADwATABcAGwAAETUzFTM1MxUFNTMVMzUzFQU1MxUHNTMVBzUzFX19+v4M+vp9/Y99fX19fQH0fX19fX19fX19fX19fX19fX19AAAFAAAAAAJxAnEAAwAHAAsADwATAAATNSEVBTUzFRU1IRUVNTMVBTUhFX0B9P2PfQF3ff2PAfQB9H19fX19fX19fX19fX19AAAHAAAAAAF3A2sAAwAHAAsADwATABcAGwAAEzUzFQc1MxUHNSEVBzUzFQc1MxUHNTMVFTUzFX19fX36AXf6fX19fX19Au59fX19fX19fX19fX19fX19fX19fQAJAAAAAAJxAnEAAwAHAAsADwATABcAGwAfACMAABE1MxUhNTMVBTUzFSE1MxUFNTMVITUzFQU1MxUhNTMVBTUhFX0Bd339j30Bd339j30Bd339j30Bd33+DAH0AfR9fX19fX19fX19fX19fX19fX19fX19AAkAAAAAAnECcQADAAcACwAPABMAFwAbAB8AIwAAETUzFSE1MxUFNTMVITUzFQU1MxUhNTMVBTUzFTM1MxUHNTMVfQF3ff2PfQF3ff2PfQF3ff4MfX19+n0B9H19fX19fX19fX19fX19fX19fX19fX0AAAsAAAAAAnECcQADAAcACwAPABMAFwAbAB8AIwAnACsAABE1MxUhNTMVBTUzFSE1MxUFNTMVMzUzFTM1MxUFNTMVMzUzFTM1MxUFNSEVfQF3ff2PfQF3ff2PfX19fX39j319fX19/gwB9AH0fX19fX19fX19fX19fX19fX19fX19fX19fX0ACQAAAAACcQJxAAMABwALAA8AEwAXABsAHwAjAAARNTMVITUzFQU1MxUzNTMVBzUzFQc1MxUzNTMVBTUzFSE1MxV9AXd9/gx9fX36ffp9fX3+DH0Bd30B9H19fX19fX19fX19fX19fX19fX19fX0AAAkAAP+DAnECcQADAAcACwAPABMAFwAbAB8AIwAAETUzFSE1MxUFNTMVITUzFQU1MxUhNTMVBTUhFQc1MxUFNSEVfQF3ff2PfQF3ff2PfQF3ff4MAfR9ff2PAfQB9H19fX19fX19fX19fX19fX19fX19fX19AAAFAAAAAAJxAnEAAwAHAAsADwATAAARNSEVBzUzFQc1MxUHNTMVBzUhFQJx+n36ffp9+gJxAfR9fX19fX19fX19fX19fQAADQAAAAACcQNrAAMABwALAA8AEwAXABsAHwAjACcAKwAvADMAABM1IRUFNTMVITUzFQU1MxUzNTMVBTUzFTM1MxUzNTMVBTUzFTM1MxUFNTMVITUzFQU1IRV9AXf+DH0Bd339j336+v2PfX19fX39j/r6ff2PfQF3ff4MAXcC7n19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19AAcAAAAAAnEDawADAAcACwAPABMAFwAbAAATNTMVBzUzFQc1MxUHNTMVBzUzFQc1MxUFNSEV+n36+n19fX19fX19/okCcQLufX19fX19fX19fX19fX19fX19fX0ACAAAAAACcQNrAAMABwALAA8AEwAXABsAHwAAEzUhFQU1MxUhNTMVBzUzFQU1MxUFNTMVBzUzFQc1IRV9AXf+DH0Bd319ff6J+v6Jffp9fQJxAu59fX19fX19fX19fX19fX19fX19fX19AAkAAAAAAnEDawADAAcACwAPABMAFwAbAB8AIwAAEzUhFQU1MxUhNTMVBzUzFQU1MxUVNTMVBTUzFSE1MxUFNSEVfQF3/gx9AXd9fX3+ifp9/Y99AXd9/gwBdwLufX19fX19fX19fX19fX19fX19fX19fX19AAAKAAAAAAJxA2sAAwAHAAsADwATABcAGwAfACMAJwAAATUzFQU1MxUzNTMVBTUzFTM1MxUFNTMVITUzFQU1IRUHNTMVBzUzFQF3+v6JfX19/gx9+n39j30Bd339jwJxfX19fQLufX19fX19fX19fX19fX19fX19fX19fX19fX0AAAgAAAAAAnEDawADAAcACwAPABMAFwAbAB8AABE1IRUFNTMVBzUhFRU1MxUHNTMVBTUzFSE1MxUFNSEVAnH9j319AfR9fX39j30Bd33+DAF3Au59fX19fX19fX19fX19fX19fX19fX19AAAJAAAAAAJxA2sAAwAHAAsADwATABcAGwAfACMAABM1MxUFNTMVBzUzFQc1IRUFNTMVITUzFQU1MxUhNTMVBTUhFfr6/ol9+n19AfT+DH0Bd339j30Bd33+DAF3Au59fX19fX19fX19fX19fX19fX19fX19fX0ACAAAAAACcQNrAAMABwALAA8AEwAXABsAHwAAETUhFQU1MxUhNTMVBzUzFQc1MxUHNTMVBzUzFQc1MxUCcf2PfQF3fX19+n36fX19fX0C7n19fX19fX19fX19fX19fX19fX19fX0ACwAAAAACcQNrAAMABwALAA8AEwAXABsAHwAjACcAKwAAEzUhFQU1MxUhNTMVBTUzFSE1MxUFNSEVBTUzFSE1MxUFNTMVITUzFQU1IRV9AXf+DH0Bd339j30Bd33+DAF3/gx9AXd9/Y99AXd9/gwBdwLufX19fX19fX19fX19fX19fX19fX19fX19fX19fQAACQAAAAACcQNrAAMABwALAA8AEwAXABsAHwAjAAATNSEVBTUzFSE1MxUFNTMVITUzFQU1IRUHNTMVBzUzFQU1MxV9AXf+DH0Bd339j30Bd33+DAH0fX36ff6J+gLufX19fX19fX19fX19fX19fX19fX19fX19AAYAAAAAAH0DawADAAcACwAPABMAFwAAETUzFQc1MxUHNTMVBzUzFQc1MxUHNTMVfX19fX19fX19fX0C7n19fX19fX19fX19fX19+n19AAcAAAAAAnEDawADAAcACwAPABMAFwAbAAATNSEVBTUzFSE1MxUHNTMVBzUzFQc1MxUHNTMVfQF3/gx9AXd9fX36ffp9fX0C7n19fX19fX19fX19fX19fX36fX0AAQAAAAAAfQB9AAMAADE1MxV9fX0AAAIAAP+DAH0AfQADAAcAADE1MxUHNTMVfX19fX19fX0AAgAAAAAAfQJxAAMABwAAETUzFQM1MxV9fX0B9H19/gx9fQAAAwAA/4MAfQJxAAMABwALAAARNTMVAzUzFQc1MxV9fX19fQH0fX3+DH19fX19AAIAAAJxAH0DawADAAcAABE1MxUHNTMVfX19Au59fX19fQAEAAACcQF3A2sAAwAHAAsADwAAETUzFTM1MxUFNTMVMzUzFX19ff6JfX19Au59fX19fX19fX0AAAEAAAF3AfQB9AADAAARNSEVAfQBd319AAUAAAB9AnEC7gADAAcACwAPABMAABM1MxUHNTMVBTUhFQU1MxUHNTMV+n19ff6JAnH+iX19fQJxfX19fX19fX19fX19fX0AAAcAAAAAAXcDawADAAcACwAPABMAFwAbAAATNTMVBzUzFQc1MxUHNTMVBzUzFRU1MxUVNTMV+n36ffp9fX19fX19Au59fX19fX19fX19fX19fX19fX19fQAHAAAAAAF3A2sAAwAHAAsADwATABcAGwAAETUzFRU1MxUVNTMVBzUzFQc1MxUHNTMVBzUzFX19fX19fX36ffp9Au59fX19fX19fX19fX19fX19fX19fQAABwAAAAACcQNrAAMABwALAA8AEwAXABsAAAE1MxUHNTMVBzUzFQc1MxUHNTMVBzUzFQc1MxUB9H36fX19+n36fX19+n0C7n19fX19fX19fX19fX19fX19fX19AAAJAAAAAAJxA2sAAwAHAAsADwATABcAGwAfACMAABE1MxUhNTMVBzUzFQc1MxUHNTMVBzUzFQc1MxUHNTMVITUzFX0Bd319ffp9+n36ffp9fX0Bd30C7n19fX19fX19fX19fX19fX19fX19fX19fQAACQAAAPoCcQNrAAMABwALAA8AEwAXABsAHwAjAAATNTMVBTUzFTM1MxUzNTMVBTUhFQU1MxUzNTMVMzUzFQU1MxX6ff6JfX19fX3+DAF3/gx9fX19ff6JfQLufX19fX19fX19fX19fX19fX19fX19fQAAAQAA/4MCcQAAAAMAABU1IRUCcX19fQAACgAAAH0CcQNrAAMABwALAA8AEwAXABsAHwAjACcAABM1MxUzNTMVBTUhFQU1MxUzNTMVBTUzFTM1MxUFNSEVBTUzFTM1MxV9fX19/gwCcf4MfX19/ol9fX3+DAJx/gx9fX0C7n19fX19fX19fX19fX19fX19fX19fX19fX0AAgAAAPoCcQJxAAMABwAAETUhFQU1IRUCcf2PAnEB9H19+n19AAAHAAAAAAH0A2sAAwAHAAsADwATABcAGwAAATUzFQc1MxUHNTMVBzUzFRU1MxUVNTMVFTUzFQF3ffp9+n36fX19fQLufX19fX19fX19fX19fX19fX19fX0ABwAAAAAB9ANrAAMABwALAA8AEwAXABsAABE1MxUVNTMVFTUzFRU1MxUHNTMVBzUzFQc1MxV9fX19+n36ffp9Au59fX19fX19fX19fX19fX19fX19fQABAAABdwB9AfQAAwAAETUzFX0Bd319AAADAAAAAAJxAH0AAwAHAAsAADE1MxUzNTMVMzUzFX19fX19fX19fX19AAABAAABdwLuAfQAAwAAETUhFQLuAXd9fQAKAAAAAALuAu4AAwAHAAsADwATABcAGwAfACMAJwAAATUzFQU1IRUzNTMVBTUzFSE1MxUFNTMVITUzFQU1MxUhNTMVBTUhFQH0ff4MAXd9ff0SfQF3ff2PfQF3ff2PfQF3ff4MAXcCcX19fX19fX19fX19fX19fX19fX19fX19fX0ADAAAAAAC7gNrAAMABwALAA8AEwAXABsAHwAjACcAKwAvAAATNTMVFTUzFTM1MxUFNSEVMzUzFQU1MxUhNTMVBTUzFSE1MxUFNTMVITUzFQU1IRV9+n19ff2PAXd9ff0SfQF3ff2PfQF3ff2PfQF3ff4MAXcC7n19fX19fX19fX19fX19fX19fX19fX19fX19fX19fQAACQAAAAACcQNrAAMABwALAA8AEwAXABsAHwAjAAABNTMVBzUzFTM1MxUFNSEVBTUzFSE1MxUFNSEVBTUzFRU1IRUBd336fX19/gwBd/4MfQF3ff2PAnH9j30B9ALufX19fX19fX19fX19fX19fX19fX19fX19AAsAAAAAAnEDawADAAcACwAPABMAFwAbAB8AIwAnACsAAAE1MxUHNTMVMzUzFQU1IRUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxUFNSEVAXd9+n19ff4MAXf+DH0Bd339j30Bd339j30Bd33+DAF3Au59fX19fX19fX19fX19fX19fX19fX19fX19fX19AAAIAAAAAAJxA2sAAwAHAAsADwATABcAGwAfAAABNTMVBzUzFQc1IRUVNTMVBTUhFQU1MxUhNTMVBTUhFQF3ffp9+gF3ff4MAfT9j30Bd33+DAH0Au59fX19fX19fX19fX19fX19fX19fX19AAAIAAAAAAJxA2sAAwAHAAsADwATABcAGwAfAAATNTMVFTUzFQc1IRUVNTMVBTUhFQU1MxUhNTMVBTUhFX19ffoBd33+DAH0/Y99AXd9/gwB9ALufX19fX19fX19fX19fX19fX19fX19fQAACQAAAAACcQNrAAMABwALAA8AEwAXABsAHwAjAAATNTMVBzUzFTM1MxUFNSEVFTUzFQU1IRUFNTMVITUzFQU1IRX6ffp9fX3+iQF3ff4MAfT9j30Bd33+DAH0Au59fX19fX19fX19fX19fX19fX19fX19fX0AAAgAAAAAAnEDawADAAcACwAPABMAFwAbAB8AABM1MxUzNTMVBTUhFRU1MxUFNSEVBTUzFSE1MxUFNSEVfX19ff6JAXd9/gwB9P2PfQF3ff4MAfQC7n19fX36fX19fX19fX19fX19fX19fQAKAAAAAAJxA2sAAwAHAAsADwATABcAGwAfACMAJwAAEzUzFTM1MxUFNTMVMzUzFQU1IRUVNTMVBTUhFQU1MxUhNTMVBTUhFX36fX39j319+v6JAXd9/gwB9P2PfQF3ff4MAfQC7n19fX19fX19fX19fX19fX19fX19fX19fX19AAgAAAAAAnEDawADAAcACwAPABMAFwAbAB8AAAE1MxUHNTMVBzUhFQU1MxUhNTMVBTUhFQU1MxUVNSEVAXd9+n36AXf+DH0Bd339jwJx/Y99AfQC7n19fX19fX19fX19fX19fX19fX19fX0AAAgAAAAAAnEDawADAAcACwAPABMAFwAbAB8AABM1MxUVNTMVBzUhFQU1MxUhNTMVBTUhFQU1MxUVNSEVfX19+gF3/gx9AXd9/Y8Ccf2PfQH0Au59fX19fX19fX19fX19fX19fX19fX19AAAJAAAAAAJxA2sAAwAHAAsADwATABcAGwAfACMAABM1MxUHNTMVMzUzFQU1IRUFNTMVITUzFQU1IRUFNTMVFTUhFfp9+n19ff6JAXf+DH0Bd339jwJx/Y99AfQC7n19fX19fX19fX19fX19fX19fX19fX19fQAACAAAAAACcQNrAAMABwALAA8AEwAXABsAHwAAEzUzFTM1MxUFNSEVBTUzFSE1MxUFNSEVBTUzFRU1IRV9fX19/okBd/4MfQF3ff2PAnH9j30B9ALufX19ffp9fX19fX19fX19fX19fX19AAoAAAAAAnEDawADAAcACwAPABMAFwAbAB8AIwAnAAABNTMVBzUzFQc1IRUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxUFNSEVAXd9+n36AXf+DH0Bd339j30Bd339j30Bd33+DAF3Au59fX19fX19fX19fX19fX19fX19fX19fX19fQAKAAAAAAJxA2sAAwAHAAsADwATABcAGwAfACMAJwAAEzUzFRU1MxUHNSEVBTUzFSE1MxUFNTMVITUzFQU1MxUhNTMVBTUhFX19ffoBd/4MfQF3ff2PfQF3ff2PfQF3ff4MAXcC7n19fX19fX19fX19fX19fX19fX19fX19fX19AAsAAAAAAnEDawADAAcACwAPABMAFwAbAB8AIwAnACsAABM1MxUHNTMVMzUzFQU1IRUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxUFNSEV+n36fX19/okBd/4MfQF3ff2PfQF3ff2PfQF3ff4MAXcC7n19fX19fX19fX19fX19fX19fX19fX19fX19fX0ACgAAAAACcQNrAAMABwALAA8AEwAXABsAHwAjACcAABM1MxUzNTMVBTUhFQU1MxUhNTMVBTUzFSE1MxUFNTMVITUzFQU1IRV9fX19/okBd/4MfQF3ff2PfQF3ff2PfQF3ff4MAXcC7n19fX36fX19fX19fX19fX19fX19fX19fX0AAAwAAAAAAnEDawADAAcACwAPABMAFwAbAB8AIwAnACsALwAAEzUzFTM1MxUFNTMVMzUzFQU1IRUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxUFNSEVffp9ff2PfX36/okBd/4MfQF3ff2PfQF3ff2PfQF3ff4MAXcC7n19fX19fX19fX19fX19fX19fX19fX19fX19fX19fQAACwAAAAACcQNrAAMABwALAA8AEwAXABsAHwAjACcAKwAAATUzFQc1MxUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxUFNTMVITUzFQU1IRUBd336ff6JfQF3ff2PfQF3ff2PfQF3ff2PfQF3ff4MAfQC7n19fX19fX19fX19fX19fX19fX19fX19fX19fX0AAAsAAAAAAnEDawADAAcACwAPABMAFwAbAB8AIwAnACsAABM1MxUVNTMVBTUzFSE1MxUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxUFNSEVfX19/ol9AXd9/Y99AXd9/Y99AXd9/Y99AXd9/gwB9ALufX19fX19fX19fX19fX19fX19fX19fX19fX19fQAADAAAAAACcQNrAAMABwALAA8AEwAXABsAHwAjACcAKwAvAAATNTMVBzUzFTM1MxUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxUFNTMVITUzFQU1IRX6ffp9fX3+DH0Bd339j30Bd339j30Bd339j30Bd33+DAH0Au59fX19fX19fX19fX19fX19fX19fX19fX19fX19fX0ACwAAAAACcQNrAAMABwALAA8AEwAXABsAHwAjACcAKwAAEzUzFTM1MxUFNTMVITUzFQU1MxUhNTMVBTUzFSE1MxUFNTMVITUzFQU1IRV9fX19/gx9AXd9/Y99AXd9/Y99AXd9/Y99AXd9/gwB9ALufX19ffp9fX19fX19fX19fX19fX19fX19fX19AAAHAH0AAAF3A2sAAwAHAAsADwATABcAGwAAEzUzFQc1MxUHNTMVBzUzFQc1MxUHNTMVBzUzFfp9+n19fX19fX19fX19Au59fX19fX19fX19fX19fX19fX19fQAHAAAAAAD6A2sAAwAHAAsADwATABcAGwAAETUzFRU1MxUHNTMVBzUzFQc1MxUHNTMVBzUzFX19fX19fX19fX19fQLufX19fX19fX19fX19fX19fX19fX0ACAAAAAABdwNrAAMABwALAA8AEwAXABsAHwAAEzUzFQc1MxUzNTMVBzUzFQc1MxUHNTMVBzUzFQc1MxV9ffp9fX36fX19fX19fX19Au59fX19fX19fX19fX19fX19fX19fX19AAcAAAAAAXcDawADAAcACwAPABMAFwAbAAARNTMVMzUzFQc1MxUHNTMVBzUzFQc1MxUHNTMVfX19+n19fX19fX19fQLufX19ffp9fX19fX19fX19fX19fQAAAAAABAA2AAEAAAAAAAEACwAAAAEAAAAAAAIABwALAAMAAQQJAAEAFgASAAMAAQQJAAIADgAoQ2xvdWRCbG9ja3NSZWd1bGFyAEMAbABvAHUAZABCAGwAbwBjAGsAcwBSAGUAZwB1AGwAYQByAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcQAAAAMBAgEDAQQBBQEGAQcBCAEJAQoBCwEMAQ0BDgEPARABEQESARMBFAEVARYBFwEYARkBGgEbARwBHQEeAR8BIAEhASIBIwEkASUBJgEnASgBKQEqASsBLAEtAS4BLwEwATEBMgEzATQBNQE2ATcBOAE5AToBOwE8AT0BPgE/AUABQQFCAUMBRAFFAUYBRwFIAUkBSgFLAUwBTQFOAU8BUAFRAVIBUwFUAVUBVgFXAVgBWQFaAVsBXAFdAV4BXwFgAWEBYgFjAWQBZQFmAWcBaAFpAWoBawFsAW0BbgFvAXAFZzAwNDEFZzAwNDIFZzAwNDMFZzAwNDQFZzAwNDUFZzAwNDYFZzAwNDcFZzAwNDgFZzAwNDkFZzAwNEEFZzAwNEIFZzAwNEMFZzAwNEQFZzAwNEUFZzAwNEYFZzAwNTAFZzAwNTEFZzAwNTIFZzAwNTMFZzAwNTQFZzAwNTUFZzAwNTYFZzAwNTcFZzAwNTgFZzAwNTkFZzAwNUEFZzAwNjEFZzAwNjIFZzAwNjMFZzAwNjQFZzAwNjUFZzAwNjYFZzAwNjcFZzAwNjgFZzAwNjkFZzAwNkEFZzAwNkIFZzAwNkMFZzAwNkQFZzAwNkUFZzAwNkYFZzAwNzAFZzAwNzEFZzAwNzIFZzAwNzMFZzAwNzQFZzAwNzUFZzAwNzYFZzAwNzcFZzAwNzgFZzAwNzkFZzAwN0EFZzAwMzAFZzAwMzEFZzAwMzIFZzAwMzMFZzAwMzQFZzAwMzUFZzAwMzYFZzAwMzcFZzAwMzgFZzAwMzkFZzAwMjEFZzAwM0YFZzAwMkUFZzAwMkMFZzAwM0EFZzAwM0IFZzAwMjcFZzAwMjIFZzAwMkQFZzAwMkIFZzAwMjgFZzAwMjkFZzAwMkYFZzAwMjUFZzAwMkEFZzAwNUYFZzAwMjMFZzAwM0QFZzAwM0MFZzAwM0UFZzAwQjcFZzIwMjYFZzIwMTQFZzAxQTEFZzFFREYFZzFFQkYFZzFFRDEFZzAwRTEFZzAwRTAFZzAwRTIFZzAwRTQFZzAwRTMFZzAwRTkFZzAwRTgFZzAwRUEFZzAwRUIFZzAwRjMFZzAwRjIFZzAwRjQFZzAwRjYFZzAwRjUFZzAwRkEFZzAwRjkFZzAwRkIFZzAwRkMFZzAwRUQFZzAwRUMFZzAwRUUFZzAwRUYAAA==) format('truetype'); font-display: block; }
+  /* POLICE-FIN */
+  :root {
+    --encre: #3b2a1e;
+    --papier: #f3e9d2;
+    --papier-fonce: #e3d3b0;
+    --bois: #f4dca8;
+    --bois-ombre: #d8b06e;
+    --police-pixel: 'CloudBlocks', ui-monospace, "Cascadia Mono", "Roboto Mono", "DejaVu Sans Mono", "Courier New", monospace;
+    --police-texte: 'CloudBlocks', Georgia, "Noto Serif", "Times New Roman", serif;
+  }
+  html, body {
+    font-synthesis: none;
+    margin: 0; height: 100%; overflow: hidden;
+    background: #14162a;
+    touch-action: manipulation;
+    -webkit-user-select: none; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+  }
+  #scene {
+    position: fixed; display: block;
+    image-rendering: pixelated; image-rendering: crisp-edges;
+  }
+  /* ---------- Boutons « pixel » (bordure crénelée par box-shadow) ---------- */
+  /* Boutons façon Minecraft : pierre grise biseautée, texte blanc avec ombre */
+  .btn-pixel {
+    --fond: #8e8e8e; --clair: #c6c6c6; --sombre: #555555;
+    font: 400 16px/1 var(--police-pixel);
+    color: #fff; text-shadow: 2px 2px 0 #3a3a3a; background: var(--fond);
+    border: 0; margin: 4px; padding: 11px 14px; cursor: pointer; letter-spacing: .5px;
+    box-shadow: 0 0 0 3px #1c1c1c, inset 3px 3px 0 0 var(--clair), inset -3px -4px 0 0 var(--sombre);
+  }
+  .btn-pixel:active { box-shadow: 0 0 0 3px #1c1c1c, inset 3px 3px 0 0 var(--sombre), inset -3px -3px 0 0 var(--clair); }
+
+  #bouton-peche {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 26px);
+    font-size: 24px; padding: 17px 22px;
+    display: flex; align-items: center; gap: 14px;
+    min-width: 210px; justify-content: center; white-space: nowrap;
+  }
+  #bouton-peche:active { transform: translateX(-50%) translateY(2px); }
+  /* Interrupteur ON/OFF en pixels */
+  .interrupteur {
+    position: relative; width: 36px; height: 18px; background: #6d6276;
+    box-shadow: 0 0 0 2px #1c1c1c;
+    flex: none;
+  }
+  .interrupteur::after {
+    content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; background: #efe6d6;
+    box-shadow: inset 0 -3px 0 0 #b9ad9c; transition: left .12s steps(3);
+  }
+  .on .interrupteur { background: #5fae63; }
+  .on .interrupteur::after { left: 20px; }
+  #bouton-peche.on { --fond: #5f9a43; --clair: #8fca6c; --sombre: #3a6628; }
+  #bouton-peche.ferrer { --fond: #c9472f; --clair: #f27c5c; --sombre: #7a2818; animation: pulse .32s steps(2) infinite; }
+  @keyframes pulse { 50% { filter: brightness(1.12); } }
+
+  #bouton-carnet {
+    position: fixed; left: 10px; bottom: calc(env(safe-area-inset-bottom, 0px) + 30px);
+    font-size: 16px; padding: 8px 9px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    opacity: .92;
+  }
+  #bouton-carnet canvas { width: 32px; height: 24px; image-rendering: pixelated; }
+
+  /* ---------- Bulle de message ---------- */
+  #bulle {
+    position: fixed; left: 50%; transform: translate(-50%, 6px);
+    max-width: 82vw; padding: 8px 12px; text-align: center;
+    font: 16px/1.5 var(--police-texte); color: var(--encre); background: var(--papier);
+    box-shadow: 0 3px 0 0 var(--encre), 0 -3px 0 0 var(--encre), 3px 0 0 0 var(--encre), -3px 0 0 0 var(--encre);
+    opacity: 0; transition: opacity .35s, transform .35s; pointer-events: none;
+  }
+  #bulle.visible { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ---------- Surcouches (carte de prise, carnet) ---------- */
+  .voile {
+    position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+    background: rgba(18, 16, 40, .5);
+    padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
+  }
+  .voile.ouvert { display: flex; }
+  .papier {
+    background: var(--papier); color: var(--encre);
+    background-image: repeating-linear-gradient(to bottom, transparent 0 23px, rgba(120, 90, 50, .12) 23px 24px);
+    box-shadow:
+      0 5px 0 0 #5a4030, 0 -5px 0 0 #5a4030, 5px 0 0 0 #5a4030, -5px 0 0 0 #5a4030,
+      inset 0 -6px 0 0 var(--papier-fonce);
+  }
+  .carte { width: min(84vw, 340px); padding: 18px 18px 14px; text-align: center; animation: apparait .35s steps(5); }
+  @keyframes apparait { from { transform: translateY(30px) scale(.9); opacity: 0; } }
+  .etiquette-rarete {
+    display: inline-block; font: 16px/1 var(--police-pixel); letter-spacing: 1px; text-transform: uppercase; text-shadow: 2px 2px 0 rgba(0,0,0,.35);
+    color: #fff; padding: 5px 8px; margin-bottom: 10px;
+  }
+  .nouveau { display: block; font: 16px var(--police-pixel); color: #c4573f; margin-bottom: 6px; letter-spacing: 1px; }
+  .cadre-sprite {
+    display: flex; align-items: center; justify-content: center; height: 132px; margin: 0 auto 12px;
+    box-shadow: 0 3px 0 0 #5a4030, 0 -3px 0 0 #5a4030, 3px 0 0 0 #5a4030, -3px 0 0 0 #5a4030;
+  }
+  .cadre-sprite canvas { image-rendering: pixelated; }
+  .carte h2 { font: 400 24px/1.2 var(--police-pixel); text-shadow: 2px 2px 0 rgba(90,64,48,.25); margin: 6px 0 8px; }
+  .carte .desc { font: 16px/1.6 var(--police-texte); margin: 0 0 10px; text-align: left; }
+  .carte .compte { font: 16px var(--police-pixel); opacity: .75; margin: 0 0 12px; }
+
+  .carnet { width: min(94vw, 420px); height: min(88vh, 860px); display: flex; flex-direction: column; }
+  .carnet header {
+    padding: 14px 16px 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    border-bottom: 3px dashed rgba(90, 64, 48, .35);
+  }
+  .carnet header h2 { font: 400 24px var(--police-pixel); margin: 0; flex: 1; text-shadow: 2px 2px 0 rgba(90,64,48,.25); }
+  .barre { width: 100%; height: 12px; background: #d8c8a6; box-shadow: 0 2px 0 0 #5a4030, 0 -2px 0 0 #5a4030, 2px 0 0 0 #5a4030, -2px 0 0 0 #5a4030; }
+  .barre > div { height: 100%; background: repeating-linear-gradient(90deg, #6fae5a 0 6px, #8cc777 6px 12px); }
+  .progression { font: 16px var(--police-pixel); width: 100%; }
+  #carnet-liste { overflow-y: auto; padding: 4px 14px 20px; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+  .section { font: 16px var(--police-pixel); margin: 16px 0 6px; padding-bottom: 3px; border-bottom: 2px solid; display: flex; justify-content: space-between; }
+  .entree { display: flex; gap: 12px; padding: 9px 0; border-bottom: 1px dotted rgba(90, 64, 48, .3); }
+  .entree .vignette { flex: none; width: 88px; height: 56px; display: flex; align-items: center; justify-content: center; background: rgba(140, 196, 236, .35); }
+  .entree.inconnue .vignette { background: rgba(120, 100, 80, .12); }
+  .entree .vignette canvas { image-rendering: pixelated; }
+  .entree .txt { flex: 1; min-width: 0; }
+  .entree .nom { font: 16px var(--police-pixel); }
+  .entree .meta { font: 16px var(--police-pixel); margin: 3px 0 4px; }
+  .entree .d { font: 16px/1.5 var(--police-texte); }
+  .entree.inconnue .d { opacity: .7; }
+
+  /* ---------- Mode paysage : on demande de tourner le téléphone ---------- */
+  #paysage {
+    position: fixed; inset: 0; display: none; align-items: center; justify-content: center; text-align: center;
+    background: #14162a; color: #f3e9d2; font: 16px/1.5 var(--police-pixel); padding: 24px;
+  }
+  @media (orientation: landscape) and (max-height: 520px) { #paysage { display: flex; } }
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas>
+
+<button id="bouton-carnet" class="btn-pixel" aria-label="Open the logbook"><canvas id="icone-carnet" width="16" height="12"></canvas><span id="compteur-carnet">0/0</span></button>
+<button id="bouton-peche" class="btn-pixel" aria-pressed="false"><span class="interrupteur"></span><span id="libelle-peche">Fish</span></button>
+<div id="bulle" role="status" aria-live="polite"></div>
+
+<!-- Carte de prise -->
+<div id="voile-carte" class="voile">
+  <div class="papier carte" role="dialog" aria-modal="true">
+    <span id="carte-nouveau" class="nouveau">✶ NEW CATCH ✶</span>
+    <span id="carte-rarete" class="etiquette-rarete">Common</span>
+    <div id="carte-cadre" class="cadre-sprite"><canvas id="carte-sprite"></canvas></div>
+    <h2 id="carte-nom">Name</h2>
+    <p id="carte-desc" class="desc"></p>
+    <p id="carte-compte" class="compte"></p>
+    <button id="carte-garder" class="btn-pixel">Keep in logbook</button>
+  </div>
+</div>
+
+<!-- Carnet de collection -->
+<div id="voile-carnet" class="voile">
+  <div class="papier carnet" role="dialog" aria-modal="true">
+    <header>
+      <h2>Cloud Logbook</h2>
+      <button id="carnet-fermer" class="btn-pixel" aria-label="Close">Close</button>
+      <div class="progression" id="carnet-progression"></div>
+      <div class="barre"><div id="carnet-barre" style="width:0%"></div></div>
+    </header>
+    <div id="carnet-liste"></div>
+  </div>
+</div>
+
+<div id="paysage">Turn your phone upright:<br>the clouds are waiting up top.</div>
+
+<script>
+'use strict';
+/* =====================================================================
+   FISHING IN THE CLOUDS (Pêcher dans les nuages)
+   Un petit jeu de pêche cosy : on pêche des nuages depuis un balcon de Hanoï.
+   Textes du jeu en anglais ; commentaires du code en français.
+
+   Organisation du fichier :
+     1. DONNÉES ÉDITABLES  (réglages, raretés, nuages, objets spéciaux, textes, couleurs)
+     2. Utilitaires
+     3. Sprites (nuages générés par ellipses, objets en ASCII-art)
+     4. Mise en page (canvas basse résolution, pliure du Flip)
+     5. Décor (ciel, balcon) et palette jour/nuit
+     6. Monde (nuages qui dérivent, particules)
+     7. Machine à états de la pêche
+     8. Rendu
+     9. Interface (carte de prise, carnet, sauvegarde, PWA)
+   10. Démarrage
+   ===================================================================== */
+
+
+/* =====================================================================
+   1. DONNÉES ÉDITABLES
+   ===================================================================== */
+
+// ---- Réglages généraux ----
+const CONFIG = {
+  CHANCE_OBJET_SPECIAL: 0.05,  // probabilité qu'une prise soit un objet spécial au lieu d'un nuage (0.05 = 5 %)
+  ATTENTE_MIN_S: 1.6,          // délai minimum après le lancer avant qu'un nuage puisse s'intéresser au bouchon
+  ATTENTE_MAX_S: 10,           // au-delà, un nuage est envoyé exprès vers le bouchon (pour ne jamais attendre trop)
+  CURIOSITE: 0.7,              // probabilité qu'un nuage qui passe près du bouchon s'y intéresse
+  RAYON_X: 16, RAYON_Y: 12,    // distance (en pixels logiques) à laquelle un nuage « remarque » le bouchon
+  GRIGNOTE_MIN_S: 1.0,         // durée de la phase « ça grignote » (taper ici = trop tôt)
+  GRIGNOTE_MAX_S: 2.6,
+  APPARITION_MIN_S: 1.8,       // intervalle entre deux nuages pêchables qui entrent dans le ciel
+  APPARITION_MAX_S: 3.6,
+  MAX_NUAGES: 6,               // nombre max de nuages pêchables à l'écran
+  LARGEUR_LOGIQUE: 100,        // largeur du monde en « gros pixels » (plus petit = pixels plus gros)
+  VIBRATION: true,             // vibration quand ça mord (si le téléphone le permet)
+};
+
+// ---- Raretés ----
+// poids     : fréquence d'apparition relative des nuages de ce rang dans le ciel
+// fenetreMs : durée pendant laquelle on peut ferrer quand ça mord
+// lenteur   : multiplicateur de vitesse (les rares vont plus lentement, on a le temps de les voir)
+// scintille : nombre moyen d'étincelles par seconde autour du nuage
+// ondule    : le nuage flotte de haut en bas ; halo : couleur du contour lumineux
+const RARETES = {
+  commun:     { nom: 'Common',      poids: 60, couleur: '#8a9bb0', fenetreMs: 1000, lenteur: 1.0, scintille: 0 },
+  peuCommun:  { nom: 'Uncommon',    poids: 25, couleur: '#5f9e63', fenetreMs: 950,  lenteur: 0.95, scintille: 0 },
+  rare:       { nom: 'Rare',        poids: 10, couleur: '#4a86c8', fenetreMs: 850,  lenteur: 0.8, scintille: 1.5, etincelle: '#ffffff' },
+  epique:     { nom: 'Epic',        poids: 4,  couleur: '#9a62c8', fenetreMs: 750,  lenteur: 0.7, scintille: 3, etincelle: '#f3e0ff', ondule: true, halo: '#e8d4ff' },
+  legendaire: { nom: 'Legendary',   poids: 1,  couleur: '#d99a1e', fenetreMs: 700,  lenteur: 0.6, scintille: 5, etincelle: '#fff1a8', ondule: true, halo: '#ffe58a' },
+};
+const ORDRE_RARETES = ['commun', 'peuCommun', 'rare', 'epique', 'legendaire'];
+const RARETE_OBJET = { nom: 'Special item', couleur: '#c95a78' };
+
+// ---- Les nuages (les « poissons » du jeu) ----
+// heures : [début, fin] en heures locales (ex. [20.5, 5] = de 20h30 à 5h, passe minuit). Absent = toute la journée.
+// forme  : nom du sprite dans FORMES (section 3)
+// indice : petite phrase affichée dans le carnet tant qu'on ne l'a pas pêché (facultatif)
+const NUAGES = [
+  // --- Communs ---
+  { id: 'cumulus', nom: 'Cumulus', rarete: 'commun', forme: 'cumulus',
+    description: "The cloud everyone draws when they're six. It knows this, and is quietly proud of it." },
+  { id: 'stratus', nom: 'Stratus', rarete: 'commun', forme: 'stratus',
+    description: "It stretches out like a Sunday with no plans. It's going nowhere, and taking its time getting there." },
+  { id: 'rond', nom: 'Little round cloud', rarete: 'commun', forme: 'rond',
+    description: "It lost its flock somewhere over the Red River. It isn't worried: there's always another one around the next corner of sky." },
+
+  // --- Peu communs ---
+  { id: 'cirrus', nom: 'Cirrus', rarete: 'peuCommun', forme: 'cirrus',
+    description: "Angel hair, combed by the high-altitude wind. They say it means the weather is about to change. It has never confirmed this." },
+  { id: 'altocumulus', nom: 'Altocumulus', rarete: 'peuCommun', forme: 'altocumulus',
+    description: "A dappled sky, all scales. For once it's the cloud that looks like a fish, and not the other way round." },
+  { id: 'mouton', nom: 'Sheep cloud', rarete: 'peuCommun', forme: 'mouton',
+    description: "It grazes on the blue in silence. Don't count it for too long: you'll fall asleep on the balcony and your coffee will go cold." },
+
+  // --- Rares ---
+  { id: 'lenticulaire', nom: 'Lenticular cloud', rarete: 'rare', forme: 'lenticulaire',
+    description: "A stack of plates balanced on the wind, perfectly still. People mistake it for a flying saucer. It thinks of itself as a contact lens." },
+  { id: 'mammatus', nom: 'Mammatus', rarete: 'rare', forme: 'mammatus',
+    description: "Pouches hanging under a storm, like a ceiling that drank too much iced tea. Strange, rare, and probably very soft." },
+  { id: 'coucher', nom: 'Evening cloud', rarete: 'rare', forme: 'coucher', heures: [17, 20],
+    indice: "Only drifts by when the sky turns pink.",
+    description: "It only lives for half an hour a day, entirely pink. It considers this plenty for a life well lived." },
+
+  // --- Épiques ---
+  { id: 'iridescent', nom: 'Iridescent cloud', rarete: 'epique', forme: 'iridescent', heures: [8, 17],
+    indice: "Look for it in broad daylight, when the sun is high.",
+    description: "Its droplets fold the light into pastels. A rainbow that couldn't wait for the rain." },
+  { id: 'kelvin', nom: 'Kelvin-Helmholtz waves', rarete: 'epique', forme: 'kelvin',
+    description: "When two winds slide over each other, the sky starts rolling into waves. Sometimes physics goes surfing." },
+  { id: 'mousson', nom: 'Monsoon cloud over Hanoi', rarete: 'epique', forme: 'mousson', heures: [13, 19.5],
+    indice: "Shows up on heavy afternoons, without warning.",
+    description: "It arrives over Hoàn Kiếm Lake at five sharp, empties its pockets in ten minutes, and leaves as if nothing happened. The scooters already have their ponchos on." },
+
+  // --- Légendaires ---
+  { id: 'noctulescent', nom: 'Noctilucent cloud', rarete: 'legendaire', forme: 'noctulescent', heures: [20.5, 5],
+    indice: "Only seen at night, way up high.",
+    description: "The highest of all clouds, at the edge of space. It keeps glowing when everything else is asleep, like a thought you can't switch off." },
+  { id: 'bibliotheque', nom: 'The Library Cloud', rarete: 'legendaire', forme: 'bibliotheque',
+    indice: "A cloud you won't find in any textbook.",
+    description: "It holds every book you ever started and never finished. Sometimes a page rains down, and it's always the right one." },
+  { id: 'baleine', nom: 'The Whale of Two Moons', rarete: 'legendaire', forme: 'baleine', heures: [22, 3.5],
+    indice: "Only swims late at night, when the world splits in two.",
+    description: "It only swims through skies that have two moons. If you caught it, take a careful look around: you may not be in quite the same world as yesterday." },
+];
+
+// ---- Objets spéciaux (souvenirs du voyage, clins d'œil littéraires) ----
+// sprite : un nom de SPRITES_ASCII (section 3) — disponibles : pho, eggcoffee, poisson, chat, rocher, carte, lanterne, tabouret, livre
+// actif  : mettre false pour retirer un objet du jeu et du carnet
+// retombe: true = l'objet retombe une fois pendant la remontée (Sisyphe)
+const OBJETS_SPECIAUX = [
+  { id: 'pho', nom: 'Bowl of tendon phở', sprite: 'pho', actif: true,
+    description: "Steaming, translucent, perfect. The tendon melts like a travel memory. Nobody knows how it got up there, and you don't ask questions of a good phở." },
+  { id: 'eggcoffee', nom: 'Egg coffee', sprite: 'eggcoffee', actif: true,
+    description: "Whipped egg yolk on very black coffee, served in a bowl of hot water to keep it warm. The densest cloud in the sky, and by far the sweetest." },
+  { id: 'poisson', nom: 'Fish that fell from the sky', sprite: 'poisson', actif: true,
+    description: "That day it was raining fish, for no particular reason. This one simply decided to go back up. It won't explain anything, and maybe that's for the best." },
+  { id: 'chat', nom: 'Talking cat', sprite: 'chat', actif: true,
+    description: "It looked at you for a long time, then said: “You're fishing in the wrong place, but at the right time.” Then it asked for a sardine. A talking cat is still a cat." },
+  { id: 'rocher', nom: 'The rock that rolls back', sprite: 'rocher', actif: true, retombe: true,
+    description: "You hauled it up. It fell back down. You hauled it up again. Watching it, for some reason, you feel in rather good spirits." },
+
+  // --- EMPLACEMENTS À REMPLIR : remplace nom et description par tes propres souvenirs (en anglais) ---
+  { id: 'souvenir1', nom: 'Memory #1', sprite: 'carte', actif: true,
+    description: "(To write: a memory from Ho Chi Minh City…)" },
+  { id: 'souvenir2', nom: 'Memory #2', sprite: 'lanterne', actif: true,
+    description: "(To write: a memory from Hanoi…)" },
+  { id: 'souvenir3', nom: 'Memory #3', sprite: 'tabouret', actif: true,
+    description: "(To write: an evening on the little plastic stools…)" },
+  { id: 'souvenir4', nom: 'Memory #4', sprite: 'livre', actif: true,
+    description: "(To write: a book, a sentence, a conversation…)" },
+  { id: 'souvenir5', nom: 'Memory #5', sprite: 'carte', actif: true,
+    description: "(To write: whatever you want her to find at the very bottom of the sky.)" },
+];
+
+// ---- Textes de l'interface ----
+const TEXTES = {
+  tropTot: [
+    "Too early… the cloud scattered, laughing.",
+    "Easy: it was only having a taste.",
+    "It got startled. It'll be back.",
+  ],
+  tropTard: [
+    "Too late… it drifted off with the wind.",
+    "It went off to dream a little further away.",
+    "Missed, but the sky is still full.",
+  ],
+  rocher: "…and it rolls back down. You haul it up again.",
+  premiereVisite: "Tap “Fish”, then tap the screen when the bobber starts to shake.",
+  ferrer: 'REEL IN!',
+  pecher: 'Fish',
+  enPeche: 'Fishing',
+  nouvelle: 'First catch!',
+  compte: (n) => `Caught ${n} times`,
+  progression: (f, t) => `${f} / ${t} catches · ${Math.round(100 * f / t)}%`,
+  pasEncore: 'Not caught yet.',
+  metaConnu: (r, n) => `${r} · caught ${n} times`,
+};
+
+// ---- Couleurs du ciel selon l'heure (images clés, interpolées entre elles) ----
+// h : heure ; nuit : 0 = plein jour, 1 = nuit noire (étoiles, fenêtres allumées, lanterne)
+const PALETTE_HORAIRE = [
+  { h: 0,    cielHaut: '#0b1030', cielBas: '#2a2f5e', teinteNuages: '#5d6694', teinteBalcon: '#4a4f7e', nuit: 1 },
+  { h: 4.5,  cielHaut: '#121a42', cielBas: '#3a3a6e', teinteNuages: '#6a6c9a', teinteBalcon: '#545783', nuit: 0.9 },
+  { h: 5.8,  cielHaut: '#4a5aa0', cielBas: '#e8a0a0', teinteNuages: '#d8b4c4', teinteBalcon: '#b89cac', nuit: 0.3 },
+  { h: 7,    cielHaut: '#6f9ee0', cielBas: '#ffd7b0', teinteNuages: '#fff0e2', teinteBalcon: '#f4e4d6', nuit: 0 },
+  { h: 9,    cielHaut: '#5fa8e8', cielBas: '#c4e6f7', teinteNuages: '#ffffff', teinteBalcon: '#ffffff', nuit: 0 },
+  { h: 16,   cielHaut: '#5aa2e6', cielBas: '#cfe8f5', teinteNuages: '#ffffff', teinteBalcon: '#fffaf2', nuit: 0 },
+  { h: 17.8, cielHaut: '#7a7ad0', cielBas: '#ffb08a', teinteNuages: '#ffd6c6', teinteBalcon: '#ffdcc6', nuit: 0 },
+  { h: 19,   cielHaut: '#4a3f8a', cielBas: '#e07898', teinteNuages: '#c894b2', teinteBalcon: '#a8849c', nuit: 0.35 },
+  { h: 20.5, cielHaut: '#141a40', cielBas: '#352f68', teinteNuages: '#626a98', teinteBalcon: '#4e5280', nuit: 0.95 },
+  { h: 24,   cielHaut: '#0b1030', cielBas: '#2a2f5e', teinteNuages: '#5d6694', teinteBalcon: '#4a4f7e', nuit: 1 }, // = 0h
+];
+
+
+/* =====================================================================
+   2. UTILITAIRES
+   ===================================================================== */
+const rand = (a, b) => a + Math.random() * (b - a);
+const choisir = (t) => t[Math.floor(Math.random() * t.length)];
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const adoucir = (t) => t * t * (3 - 2 * t);
+function mulberry32(a) { // petit générateur pseudo-aléatoire reproductible (décor stable)
+  return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+}
+function hexRgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+function rgbHex(c) { return '#' + ((1 << 24) | (c[0] << 16) | (c[1] << 8) | c[2]).toString(16).slice(1); }
+function melange(a, b, t) { const A = hexRgb(a), B = hexRgb(b); return rgbHex(A.map((v, i) => Math.round(v + (B[i] - v) * t))); }
+function creerCanvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+function ctx2d(c) { const x = c.getContext('2d'); x.imageSmoothingEnabled = false; return x; }
+function rect(c, x, y, w, h, col) { c.fillStyle = col; c.fillRect(x, y, w, h); }
+function disque(c, cx, cy, r, col) { // disque plein en pixels
+  c.fillStyle = col;
+  for (let dy = -r; dy <= r; dy++) { const hw = Math.floor(Math.sqrt(r * r - dy * dy) + 0.3); c.fillRect(cx - hw, cy + dy, hw * 2 + 1, 1); }
+}
+function ellipsePleine(c, cx, cy, rx, ry, col) {
+  c.fillStyle = col;
+  for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++) {
+    const dy = (y + 0.5 - cy) / ry; if (Math.abs(dy) > 1) continue;
+    const hw = rx * Math.sqrt(1 - dy * dy); c.fillRect(Math.round(cx - hw), y, Math.max(1, Math.round(hw * 2)), 1);
+  }
+}
+function ligne(c, x0, y0, x1, y1, col) { // Bresenham
+  c.fillStyle = col; x0 = Math.round(x0); y0 = Math.round(y0); x1 = Math.round(x1); y1 = Math.round(y1);
+  const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0), sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1; let e = dx + dy;
+  for (;;) { c.fillRect(x0, y0, 1, 1); if (x0 === x1 && y0 === y1) break; const e2 = 2 * e;
+    if (e2 >= dy) { e += dy; x0 += sx; } if (e2 <= dx) { e += dx; y0 += sy; } }
+}
+// Teinte un sprite par multiplication en conservant sa transparence
+function teinter(src, couleur) {
+  const c = creerCanvas(src.width, src.height), x = ctx2d(c);
+  x.drawImage(src, 0, 0);
+  x.globalCompositeOperation = 'multiply'; x.fillStyle = couleur; x.fillRect(0, 0, c.width, c.height);
+  x.globalCompositeOperation = 'destination-in'; x.drawImage(src, 0, 0);
+  x.globalCompositeOperation = 'source-over';
+  return c;
+}
+// Silhouette unie d'un sprite (carnet, halos)
+function silhouette(src, couleur) {
+  const c = creerCanvas(src.width, src.height), x = ctx2d(c);
+  x.drawImage(src, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = couleur; x.fillRect(0, 0, c.width, c.height);
+  x.globalCompositeOperation = 'source-over';
+  return c;
+}
+
+
+/* =====================================================================
+   3. SPRITES
+   ===================================================================== */
+
+// ---- Palettes des nuages : reflet (hi), corps (base), ombre, contour ----
+const PALS = {
+  blanc:    { hi: '#ffffff', base: '#eef3fb', ombre: '#c9d3e8', contour: '#98a6c6' },
+  gris:     { hi: '#eef1f6', base: '#d3d9e3', ombre: '#b0b9c8', contour: '#8b95a9' },
+  coucher:  { hi: '#fff1d6', base: '#ffc49c', ombre: '#e98d8f', contour: '#b5607c' },
+  mousson:  { hi: '#c4cad6', base: '#8a93a5', ombre: '#5e6679', contour: '#3d4456' },
+  mamma:    { hi: '#f6e8ee', base: '#dcc7d1', ombre: '#b89eac', contour: '#8a7088' },
+  nocti:    { hi: '#f0fdff', base: '#a6e8ff', ombre: '#62b4ee', contour: null },
+  cirrus:   { hi: '#ffffff', base: '#f4f8ff', ombre: '#e4ecf8', contour: null },
+  lointain: { hi: '#ffffff', base: '#f2f6fc', ombre: '#dde5f2', contour: null },
+};
+
+// ---- Formes des nuages ----
+// l, h : taille du sprite. dessin(f) remplit un masque avec f.ell / f.rect / f.trou / f.px.
+// L'ombrage (reflet en haut, ombre en bas, contour) est calculé automatiquement.
+// deco(d) ajoute des pixels de couleur par-dessus : d.px(x, y, couleur), d.rect(...), d.disque(...), d.dans(x, y), d.haut(x, y).
+const FORMES = {
+  cumulus: { l: 32, h: 18, pal: 'blanc', dessin(f) { f.ell(9, 12, 6, 5); f.ell(16, 8, 8, 7); f.ell(23, 10, 6, 5.5); f.ell(27, 13, 4, 3.5); f.rect(4, 12, 25, 4); } },
+  stratus: { l: 42, h: 10, pal: 'gris', dessin(f) { f.ell(21, 5, 19, 3.2); f.ell(12, 4.5, 9, 3); f.ell(30, 5.5, 10, 2.8); } },
+  rond: { l: 16, h: 15, pal: 'blanc', dessin(f) { f.ell(8, 7.5, 6.5, 6); },
+    deco(d) { d.px(5, 7, '#5a4a5a'); d.px(10, 7, '#5a4a5a'); d.px(4, 9, '#f4a6b8'); d.px(11, 9, '#f4a6b8'); d.px(7, 9, '#7a6070'); d.px(8, 9, '#7a6070'); } },
+  cirrus: { l: 38, h: 13, pal: 'cirrus', alpha: 0.9, dessin(f) {
+    f.rect(3, 4, 18, 1); f.rect(8, 5, 22, 1); f.rect(14, 6, 20, 1); f.rect(5, 8, 14, 1); f.rect(12, 9, 22, 1); f.rect(20, 10, 15, 1);
+    f.rect(20, 3, 3, 1); f.px(23, 2); f.rect(29, 4, 2, 1); f.px(31, 3); f.rect(33, 5, 2, 1); f.px(35, 4); f.rect(33, 8, 2, 1); f.px(35, 7); } },
+  altocumulus: { l: 36, h: 14, pal: 'blanc', dessin(f) {
+    for (let i = 0; i < 6; i++) f.ell(4 + i * 5.6, 5, 2.6, 2.3);
+    for (let i = 0; i < 5; i++) f.ell(7 + i * 5.6, 9.5, 2.6, 2.3); } },
+  mouton: { l: 28, h: 18, pal: 'blanc', dessin(f) { f.ell(14, 7, 7, 5); f.ell(9, 8, 5, 4.5); f.ell(19, 8, 5, 4.5); f.ell(14, 10, 9, 4); f.ell(22, 6, 3, 3); f.ell(7, 6, 3, 3); },
+    deco(d) { d.rect(1, 6, 4, 4, '#5c4b4b'); d.px(2, 7, '#ffffff'); d.px(0, 6, '#5c4b4b'); d.px(3, 10, '#5c4b4b');
+      for (const x of [8, 12, 16, 20]) d.rect(x, 14, 1, 3, '#5c4b4b'); } },
+  lenticulaire: { l: 38, h: 15, pal: 'blanc', dessin(f) { f.ell(19, 11.5, 17, 1.9); f.ell(19, 7.5, 12.5, 1.7); f.ell(19, 3.8, 7.5, 1.6); } },
+  mammatus: { l: 36, h: 17, pal: 'mamma', dessin(f) {
+    f.ell(18, 3, 17, 2.6); f.rect(2, 2, 32, 3);
+    for (const x of [5, 11, 17, 23, 29]) f.ell(x + 0.5, 6.5, 3, 3);
+    for (const x of [8, 14, 20, 26]) f.ell(x + 0.5, 10.5, 2.6, 2.8); } },
+  coucher: { l: 32, h: 16, pal: 'coucher', dessin(f) { f.ell(10, 9, 7, 5); f.ell(18, 7, 8, 5.5); f.ell(25, 10, 5, 4); f.rect(4, 9, 25, 4); },
+    deco(d) { for (let y = 0; y < 16; y++) for (let x = 0; x < 32; x++) if (d.dans(x, y) && d.haut(x, y) && (x + y) % 3 === 0) d.px(x, y, '#ffe9a8'); } },
+  iridescent: { l: 32, h: 16, pal: 'blanc', dessin(f) { f.ell(10, 9, 7, 5); f.ell(17, 7, 8, 6); f.ell(24, 9, 6, 5); f.rect(4, 9, 24, 4); },
+    deco(d) { const arc = ['#ffb3c9', '#ffd6a0', '#fff3a6', '#bff0c4', '#a9dcff', '#d2bcff'];
+      for (let y = 0; y < 16; y++) for (let x = 0; x < 32; x++) if (d.dans(x, y) && !d.haut(x, y)) d.px(x, y, arc[Math.floor((x * 0.8 + y * 1.3) / 2.5) % 6]); } },
+  kelvin: { l: 42, h: 15, pal: 'blanc', dessin(f) {
+    f.rect(1, 10, 40, 3); f.ell(21, 11.5, 20, 2);
+    for (let i = 0; i < 4; i++) { const x0 = 3 + i * 10; f.ell(x0 + 4, 6.5, 4.2, 4); f.trou(x0 + 5, 7.3, 1.7, 1.5); f.rect(x0, 9, 3, 2); f.ell(x0 + 7.5, 3.6, 1.7, 1.4); } } },
+  mousson: { l: 36, h: 26, pal: 'mousson', dessin(f) {
+    f.ell(18, 3, 15, 2.4); f.rect(5, 2, 26, 3); f.ell(18, 9, 8, 6); f.ell(13, 12, 7, 5); f.ell(23, 12, 7, 5); f.ell(18, 15, 15, 3.5); f.rect(3, 14, 30, 3); },
+    deco(d) { for (let x = 5; x < 32; x += 3) for (let y = 19 + (x % 2); y < 25; y += 3) { d.px(x, y, '#9cc0e6'); d.px(x, y + 1, '#9cc0e6'); }
+      d.px(20, 18, '#ffe680'); d.px(19, 19, '#ffe680'); d.px(20, 20, '#ffe680'); d.px(19, 21, '#ffe680'); } },
+  noctulescent: { l: 40, h: 13, pal: 'nocti', lumineux: true, dessin(f) {
+    for (let x = 1; x < 39; x++) { f.rect(x, Math.round(4 + 2 * Math.sin(x / 4)), 1, 2);
+      if (x > 4 && x < 36) f.rect(x, Math.round(8.5 + 1.5 * Math.sin(x / 5 + 1.3)), 1, 1); } },
+    deco(d) { for (const [x, y] of [[6, 2], [17, 1], [28, 11], [34, 3]]) d.px(x, y, '#ffffff'); } },
+  bibliotheque: { l: 32, h: 20, pal: 'blanc', dessin(f) { f.ell(9, 12, 7, 6); f.ell(16, 8, 9, 7.5); f.ell(24, 11, 7, 6); f.rect(3, 12, 26, 5); },
+    deco(d) { const cols = ['#c4573f', '#4f7f6a', '#4a6fa5', '#d9a441', '#8a5aa8', '#c4573f', '#4a6fa5'];
+      let x = 8; for (let i = 0; i < 7; i++) { const hh = 5 + (i % 3 === 1 ? 1 : 0);
+        for (let y = 0; y < hh; y++) { d.px(x, 14 - y, cols[i]); d.px(x + 1, 14 - y, cols[i]); }
+        d.px(x, 14 - hh + 2, '#f4e6c0'); x += 2; if (i === 3) x += 1; }
+      d.rect(7, 15, 18, 1, '#8a6a4a'); } },
+  baleine: { l: 40, h: 18, pal: 'blanc', dessin(f) { f.ell(17, 11, 13, 5.5); f.ell(8, 11, 6.5, 5); f.ell(30, 10, 4, 3); f.ell(34, 6, 2.2, 2.5); f.ell(37, 5, 2.2, 1.6); f.ell(32, 4.5, 1.6, 1.6); },
+    deco(d) { d.px(7, 10, '#3d3a55'); d.rect(3, 13, 6, 1, '#b3bfd8');
+      for (const [x, y] of [[12, 4], [11, 3], [13, 3], [10, 2], [14, 2]]) d.px(x, y, '#bfe3ff');
+      d.disque(21, 2, 1.6, '#fff2b0'); d.disque(26, 2, 1.1, '#c8f0e0'); } },
+
+  // --- Nuages de décor (non pêchables) ---
+  loin1: { l: 16, h: 7, pal: 'lointain', dessin(f) { f.ell(5, 4, 3.5, 2.5); f.ell(10, 3.5, 4, 3); f.rect(2, 4, 12, 2); } },
+  loin2: { l: 22, h: 6, pal: 'lointain', dessin(f) { f.ell(11, 3, 10, 2.2); } },
+  loin3: { l: 12, h: 7, pal: 'lointain', dessin(f) { f.ell(6, 3.5, 4.5, 3); } },
+  brume1: { l: 56, h: 16, pal: 'blanc', dessin(f) { f.ell(14, 10, 12, 5); f.ell(28, 7, 14, 6.5); f.ell(43, 10, 11, 5); f.rect(4, 10, 48, 4); } },
+  brume2: { l: 48, h: 12, pal: 'blanc', dessin(f) { f.ell(24, 6, 22, 4.5); f.ell(14, 5, 10, 4); } },
+};
+
+// ---- Sprites en ASCII-art (objets et décor du balcon) ----
+// Chaque caractère renvoie à une couleur de « pal » ; « . » = transparent.
+const SPRITES_ASCII = {
+  pho: { pal: { o: '#4a3030', w: '#f6f1e7', b: '#4a78b8', y: '#e6a84f', n: '#f8eccb', g: '#5fa04a', t: '#c99a6e', s: '#ffffff', r: '#d8453a' }, l: [
+    '....s...s.......',
+    '.....s...s..s...',
+    '....s...s..s....',
+    '..oooooooooooo..',
+    '.oynnyggynntryo.',
+    '.oyttnnyngnnyyo.',
+    'owwwwwwwwwwwwwwo',
+    'owbwwbwwbwwbwwbo',
+    '.owwwwwwwwwwwwo.',
+    '..owwwwwwwwwwo..',
+    '...oowwwwwwoo...',
+    '.....oooooo.....'] },
+  eggcoffee: { pal: { o: '#5a3a2a', C: '#f2cf72', c: '#9a6a40', w: '#fbf6ee', h: '#a9b8c6', H: '#d6e2ec', s: '#ffffff' }, l: [
+    '.....s..s.......',
+    '......s..s......',
+    '..oooooooooo....',
+    '..oCCcCCCCCo....',
+    '..owwwwwwwwoooo.',
+    '..owwwwwwwwo..o.',
+    '..owwwwwwwwo..o.',
+    '..owwwwwwwwoooo.',
+    '...owwwwwwo.....',
+    'hhhhoooooohhhh..',
+    'hHHHHHHHHHHHHh..',
+    '.hhhhhhhhhhhh...'] },
+  poisson: { pal: { o: '#2d4a66', b: '#7fb6d9', l: '#e8f2f7', T: '#5a90b8', e: '#ffffff' }, l: [
+    '......oo........',
+    '.....obbo.......',
+    '..ooooobbooo..oo',
+    '.obbbbbbbbbbooTo',
+    'obeobbbbbbbbbTTo',
+    'obbbbblllbbbbTTo',
+    '.obbblllllbbooTo',
+    '..ooooooooooo.oo'] },
+  chat: { pal: { o: '#3a2a2a', k: '#e39b4f', e: '#6fc06a', p: '#f08aa0', w: '#ffffff', d: '#3a2a2a' }, l: [
+    '........oooooooo',
+    '.......owwwwwwwo',
+    '.......owdwdwdwo',
+    '.......owwwwwwwo',
+    '.o...o..oowooooo',
+    'oko.oko..o......',
+    'okkokkko........',
+    'okkkkkko........',
+    'okekkeko........',
+    'okkkpkko....oo..',
+    '.okkkko....oko..',
+    '.okkkkoooooko...',
+    'okkkkkkkkkko....',
+    'okkkkkkkkko.....',
+    '.oo.oo..oo......'] },
+  rocher: { pal: { o: '#3b3740', l: '#c9c3cc', r: '#9a94a2', d: '#6d6878', m: '#7fae6a' }, l: [
+    '.....oooooo.....',
+    '...oollllllo....',
+    '..olllrrmrrroo..',
+    '.ollrrrmmrrrrro.',
+    '.olrrrrrrrrrrdo.',
+    'orrrrrrrrrrrrddo',
+    'orrrrrrrrrrrddo.',
+    '.odrrrrrrrdddo..',
+    '..oddddddddoo...',
+    '...oooooooo.....'] },
+  carte: { pal: { o: '#5a4a3a', S: '#8cc4ec', C: '#ffffff', G: '#6fae5a', p: '#f6eedc', r: '#d9534a', l: '#b8a990' }, l: [
+    'oooooooooooooooo',
+    'oSSSSSSSoppppppo',
+    'oSSSCCSSoprrrrpo',
+    'oSSCCCCSoprrrrpo',
+    'oSSSSSSSoppppppo',
+    'oGGSSSGGollllllo',
+    'oGGGGGGGoppppppo',
+    'oGGGGGGGollllllo',
+    'oooooooooooooooo'] },
+  lanterne: { pal: { o: '#5a2a2a', y: '#e8b84a', r: '#d9483b', R: '#f37d5c' }, l: [
+    '..ooo..',
+    '.oyyyo.',
+    'orrrrro',
+    'oRrrrro',
+    'oRrrrro',
+    'orrrrro',
+    '.oyyyo.',
+    '..ooo..',
+    '...y...',
+    '...y...'] },
+  tabouret: { pal: { r: '#d8403a', R: '#f26b5b', d: '#a52b2b' }, l: [
+    'RRRRRRRRRRRRRR',
+    'rrrrrrrrrrrrrr',
+    'dddddddddddddd',
+    'drrrrrrrrrrrrd',
+    'drr.rrrrrr.rrd',
+    'dr...rrrr...rd',
+    'dr....rr....rd',
+    'dr..........rd',
+    'dr..........rd',
+    'dd..........dd'] },
+  livre: { pal: { o: '#4a3828', w: '#fbf4e4', l: '#b9ab94', B: '#c4573f' }, l: [
+    '.oooooo..oooooo.',
+    'owwwwwwoowwwwwwo',
+    'owllllwoowllllwo',
+    'owwwwwwoowwwwwwo',
+    'owllllwoowllllwo',
+    'owwwwwwoowwwwwwo',
+    'owlllwwoowlllwwo',
+    'owwwwwwoowwwwwwo',
+    'oBBBBBBooBBBBBBo',
+    '.ooooooBBoooooo.',
+    '.......oo.......'] },
+  tasse: { pal: { o: '#5a3a2a', C: '#f2cf72', c: '#9a6a40', w: '#fbf6ee', h: '#a9b8c6' }, l: [
+    '.ooooooo..',
+    '.oCCcCCo..',
+    '.owwwwwooo',
+    '.owwwwwo.o',
+    '.owwwwwooo',
+    'hhowwwohhh',
+    '.hhhhhhhh.'] },
+};
+
+// ---- Elle : petit personnage de profil (12×23), trois poses ----
+// H/h cheveux bruns, c pointes caramel, s/S peau, e œil, m lèvres, E créole argentée,
+// w/W blouse blanche, k/K empiècement en crochet, b sandales
+const PERSO = {
+  pal: { H: '#2e211b', h: '#4a3326', c: '#8a5a3a', s: '#e9b995', S: '#d29b78', e: '#2a1d18', m: '#c27466', E: '#d4d7dd',
+         w: '#f6f3ec', W: '#dcd6ca', k: '#ece2c8', K: '#c9b48c', b: '#7a5236' },
+  // canne en main (mains vers l'avant)
+  peche: [
+    '...HHHHH....', '..HHHHHHHH..', '.HHHhhhHHHH.', '.HHhHHHHsHH.', '.HHhHHssess.', '.HHhHEssssS.',
+    '.HHhHHsssm..', '.HhHHHSss...', '.HhHcHSs....', '.chcc..ss...', '..ccwwkKkw..', '..cwkKkKkkw.',
+    '...wwkKkWWss', '...wwwwwWWs.', '...wwwwwww..', '...wWwwwWw..', '..wwwWwwwWw.', '..wwWwwwwWw.',
+    '..wwwwwwwww.', '....ss..ss..', '....ss..ss..', '....ss..ss..', '...bbb..bbb.'],
+  // canne rangée (bras le long du corps)
+  repos: [
+    '...HHHHH....', '..HHHHHHHH..', '.HHHhhhHHHH.', '.HHhHHHHsHH.', '.HHhHHssess.', '.HHhHEssssS.',
+    '.HHhHHsssm..', '.HhHHHSss...', '.HhHcHSs....', '.chcc..ss...', '..ccwwkKkw..', '..cwkKkKkkw.',
+    '...wwkKkWw..', '...wwwwwWw..', '...wwwwwSs..', '...wWwwwWw..', '..wwwWwwwWw.', '..wwWwwwwWw.',
+    '..wwwwwwwww.', '....ss..ss..', '....ss..ss..', '....ss..ss..', '...bbb..bbb.'],
+  // on ferre ! (bras levés)
+  ferre: [
+    '...HHHHH....', '..HHHHHHHH..', '.HHHhhhHHHH.', '.HHhHHHHsHH.', '.HHhHHssess.', '.HHhHEssssS.',
+    '.HHhHHsssm..', '.HhHHHSss...', '.HhHcHSs....', '.chcc..ss.ss', '..ccwwkKkWWs', '..cwkKkKkkW.',
+    '...wwkKkww..', '...wwwwwWw..', '...wwwwwww..', '...wWwwwWw..', '..wwwWwwwWw.', '..wwWwwwwWw.',
+    '..wwwwwwwww.', '....ss..ss..', '....ss..ss..', '....ss..ss..', '...bbb..bbb.'],
+};
+const MAINS = { peche: [11, 12], ferre: [11, 9] };   // position des mains dans le sprite (départ de la canne)
+
+Object.assign(SPRITES_ASCII, {
+  miniTabouret: { pal: { R: '#f26b5b', r: '#d8403a', d: '#a52b2b' }, l: [
+    'RRRRRRR', 'ddddddd', 'dr.r.rd', 'd.....d', 'd.....d'] },
+  miniTasse: { pal: { o: '#5a3a2a', C: '#f2cf72', w: '#fbf6ee', h: '#a9b8c6' }, l: [
+    'oCCo.', 'owwoo', 'owwo.', 'hhhhh'] },
+  scooter: { pal: { r: '#4a8fc4', R: '#7ab4e0', d: '#3a3a40', o: '#222228', G: '#8a8a92', K: '#b0b4bb', s: '#5a3a2a' }, l: [
+    '.K.............',
+    '..K............',
+    '..Kr.....sss...',
+    '.rRrRRRRRssss..',
+    '.rrrrrrrrrrrrr.',
+    '..dddd...dddd..',
+    '.oGGGo...oGGGo.',
+    '.oGoGo...oGoGo.',
+    '..ooo.....ooo..'] },
+});
+
+// Construit un sprite de nuage à partir d'une forme
+function genererNuage(forme) {
+  const w = forme.l, h = forme.h, pal = PALS[forme.pal];
+  const m = new Uint8Array(w * h);
+  const dans = (x, y) => x >= 0 && y >= 0 && x < w && y < h && m[y * w + x] === 1;
+  const f = {
+    ell(cx, cy, rx, ry, v = 1) {
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const dx = (x + 0.5 - cx) / rx, dy = (y + 0.5 - cy) / ry; if (dx * dx + dy * dy <= 1) m[y * w + x] = v; } },
+    rect(x0, y0, rw, rh, v = 1) { for (let y = y0; y < y0 + rh; y++) for (let x = x0; x < x0 + rw; x++) if (x >= 0 && y >= 0 && x < w && y < h) m[y * w + x] = v; },
+    trou(cx, cy, rx, ry) { this.ell(cx, cy, rx, ry, 0); },
+    px(x, y) { if (x >= 0 && y >= 0 && x < w && y < h) m[y * w + x] = 1; },
+  };
+  forme.dessin(f);
+  // Ombrage automatique
+  const col = new Array(w * h).fill(null);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x;
+    if (m[i]) {
+      if (!dans(x, y - 1)) col[i] = pal.hi;
+      else if (!dans(x, y + 1) || !dans(x, y + 2)) col[i] = pal.ombre;
+      else col[i] = (((x * 7 + y * 13) ^ (x * y)) % 9 === 0) ? melange(pal.base, pal.ombre, 0.4) : pal.base; // grain façon bloc
+    } else if (pal.contour && (dans(x - 1, y) || dans(x + 1, y) || dans(x, y - 1) || dans(x, y + 1))) col[i] = pal.contour;
+  }
+  // Décorations
+  if (forme.deco) {
+    const d = {
+      px(x, y, c) { if (x >= 0 && y >= 0 && x < w && y < h) col[y * w + x] = c; },
+      rect(x0, y0, rw, rh, c) { for (let y = y0; y < y0 + rh; y++) for (let x = x0; x < x0 + rw; x++) this.px(x, y, c); },
+      disque(cx, cy, r, c) { for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if ((x + .5 - cx) ** 2 + (y + .5 - cy) ** 2 <= r * r) this.px(x, y, c); },
+      dans, haut: (x, y) => dans(x, y) && !dans(x, y - 1),
+    };
+    forme.deco(d);
+  }
+  const c = creerCanvas(w, h), x = ctx2d(c), img = x.createImageData(w, h);
+  for (let i = 0; i < w * h; i++) if (col[i]) { const [r, g, b] = hexRgb(col[i]); img.data.set([r, g, b, 255], i * 4); }
+  x.putImageData(img, 0, 0);
+  return c;
+}
+function spriteAscii(def) {
+  const h = def.l.length, w = Math.max(...def.l.map(s => s.length));
+  const c = creerCanvas(w, h), x = ctx2d(c);
+  def.l.forEach((ligneTxt, y) => { for (let i = 0; i < ligneTxt.length; i++) { const k = def.pal[ligneTxt[i]]; if (k) rect(x, i, y, 1, 1, k); } });
+  return c;
+}
+
+// Sprites construits au démarrage
+const SPR = { nuages: {}, objets: {}, ascii: {}, decor: {} };
+function construireSprites() {
+  for (const n of NUAGES) SPR.nuages[n.id] = genererNuage(FORMES[n.forme]);
+  for (const k in SPRITES_ASCII) SPR.ascii[k] = spriteAscii(SPRITES_ASCII[k]);
+  for (const o of OBJETS_SPECIAUX) SPR.objets[o.id] = SPR.ascii[o.sprite] || SPR.ascii.carte;
+  for (const k of ['loin1', 'loin2', 'loin3', 'brume1', 'brume2']) SPR.decor[k] = genererNuage(FORMES[k]);
+  SPR.perso = {};
+  for (const pose of ['peche', 'repos', 'ferre']) {
+    SPR.perso[pose] = spriteAscii({ pal: PERSO.pal, l: PERSO[pose] });
+    const clin = PERSO[pose].map((l, y) => y === 4 ? l.replace('e', 's') : l);   // paupières fermées
+    SPR.perso[pose + 'B'] = spriteAscii({ pal: PERSO.pal, l: clin });
+  }
+}
+
+
+/* =====================================================================
+   4. MISE EN PAGE (pixels nets + pliure)
+   ===================================================================== */
+const canvas = document.getElementById('scene');
+const ctx = ctx2d(canvas);
+let W = 150, H = 330;          // taille du monde en pixels logiques
+let SPLIT = 165;               // ligne de séparation ciel / balcon (pixels logiques)
+let ECHELLE_CSS = 2.7, DECALAGE_X = 0, DECALAGE_Y = 0, SPLIT_CSS = 0;
+let G = {};                    // géométrie du balcon (calculée à chaque redimensionnement)
+
+function redimensionner() {
+  const dpr = window.devicePixelRatio || 1;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  // Facteur entier en pixels physiques par pixel logique → pixels parfaitement nets
+  const facteur = Math.max(2, Math.round(vw * dpr / CONFIG.LARGEUR_LOGIQUE));
+  const ancienW = W, ancienSplit = SPLIT;
+  W = Math.ceil(vw * dpr / facteur); H = Math.ceil(vh * dpr / facteur);
+  canvas.width = W; canvas.height = H;
+  ECHELLE_CSS = facteur / dpr;
+  canvas.style.width = (W * ECHELLE_CSS) + 'px'; canvas.style.height = (H * ECHELLE_CSS) + 'px';
+  DECALAGE_X = Math.floor((vw - W * ECHELLE_CSS) / 2); DECALAGE_Y = Math.floor((vh - H * ECHELLE_CSS) / 2);
+  canvas.style.left = DECALAGE_X + 'px'; canvas.style.top = DECALAGE_Y + 'px';
+  ctx.imageSmoothingEnabled = false;
+
+  // Pliure : API Viewport Segments (Chrome) — deux segments empilés = pliure horizontale
+  SPLIT_CSS = vh / 2;
+  try {
+    const segs = window.viewport && window.viewport.segments;
+    if (segs && segs.length === 2 && segs[1].top >= segs[0].bottom - 1) SPLIT_CSS = (segs[0].bottom + segs[1].top) / 2;
+  } catch (e) { /* API absente : partage 50/50 */ }
+  SPLIT = clamp(Math.round((SPLIT_CSS - DECALAGE_Y) / ECHELLE_CSS), Math.round(H * 0.3), Math.round(H * 0.7));
+
+  // Recaler les nuages existants sur la nouvelle taille
+  const kx = W / ancienW, ky = SPLIT / ancienSplit;
+  for (const n of nuages) { n.x *= kx; n.y *= ky; }
+  for (const n of decor) { n.x *= kx; n.y *= ky; }
+
+  calculerGeometrie();
+  construireEtoiles();
+  fondBrut = null; cleBalcon = '';  // forcer la reconstruction des calques
+  majPalette(true);
+  document.getElementById('bulle').style.top = (SPLIT_CSS + 10) + 'px';
+}
+
+function calculerGeometrie() {
+  const BH = H - SPLIT;
+  G.BH = BH;
+  G.facade = Math.round(W * 0.46);                          // bord droit de l'immeuble (les balcons dépassent à droite)
+  G.rue = H - 24;                                           // niveau du trottoir
+  G.toit = SPLIT + Math.max(8, Math.round(BH * 0.14));      // toit-terrasse
+  G.balcon = G.toit + 28;                                   // sol du balcon où elle pêche (dernier étage)
+  G.etage1 = G.balcon + Math.round((G.rue - G.balcon) / 2); // balcon du premier étage
+  G.perso = { x: G.facade + 3, y: G.balcon - 23 };
+  G.tabouret = { x: G.facade + 15, y: G.balcon - 5 };
+  G.tasse = { x: G.tabouret.x + 1, y: G.tabouret.y - 4 };
+  G.canneRangee = { base: { x: G.facade + 22, y: G.balcon - 1 }, pointe: { x: G.facade + 25, y: G.balcon - 27 } };
+  G.poteau = { x: W - 6, haut: G.toit - 4 };
+  G.fils = [                                                // [x0, y0, x1, y1, flèche]
+    [G.facade, G.toit - 6, G.poteau.x, G.poteau.haut + 2, 4],
+    [G.facade, G.toit - 3, G.poteau.x, G.poteau.haut + 5, 6],
+    [G.poteau.x, G.poteau.haut + 3, W + 2, G.poteau.haut + 8, 2],
+  ];
+  const lx = W - 15;
+  G.lanterne = { x: lx, y: Math.round(yFil(G.fils[0], lx)) + 1 };
+  G.pointe = { ...G.canneRangee.pointe }; G.mains = null;
+}
+function yFil(f, x) { const t = clamp((x - f[0]) / (f[2] - f[0]), 0, 1); return f[1] + (f[3] - f[1]) * t + f[4] * 4 * t * (1 - t); }
+
+
+/* =====================================================================
+   5. DÉCOR : CIEL, BALCON, PALETTE JOUR/NUIT
+   ===================================================================== */
+const params = new URLSearchParams(location.search);
+const HEURE_FORCEE = params.has('h') ? parseFloat(params.get('h')) : null;  // test : index.html?h=19.5
+function heureActuelle() {
+  if (HEURE_FORCEE !== null && !isNaN(HEURE_FORCEE)) return ((HEURE_FORCEE % 24) + 24) % 24;
+  const d = new Date(); return d.getHours() + d.getMinutes() / 60 + d.getSeconds() / 3600;
+}
+function paletteA(h) {
+  const P = PALETTE_HORAIRE; let i = 0;
+  while (i < P.length - 2 && h >= P[i + 1].h) i++;
+  const a = P[i], b = P[i + 1], t = clamp((h - a.h) / (b.h - a.h), 0, 1);
+  return {
+    cielHaut: melange(a.cielHaut, b.cielHaut, t), cielBas: melange(a.cielBas, b.cielBas, t),
+    teinteNuages: melange(a.teinteNuages, b.teinteNuages, t), teinteBalcon: melange(a.teinteBalcon, b.teinteBalcon, t),
+    nuit: lerp(a.nuit, b.nuit, t),
+  };
+}
+let pal = paletteA(12), heure = 12, cleBalcon = '';
+let calqueCiel = null, fondBrut = null, avantBrut = null, fondTeint = null, avantTeint = null;
+const cacheTeinte = new Map();
+let fenetres = [];
+
+function majPalette(force) {
+  heure = heureActuelle();
+  const p = paletteA(heure);
+  const cle = p.cielHaut + p.cielBas + p.teinteNuages + p.teinteBalcon + p.nuit.toFixed(2);
+  if (!force && cle === cleBalcon) return;
+  pal = p; cleBalcon = cle;
+  cacheTeinte.clear();
+  construireCiel();
+  if (!fondBrut) {
+    fondBrut = creerCanvas(W, H); avantBrut = creerCanvas(W, H);
+    dessinerImmeuble(ctx2d(fondBrut), ctx2d(avantBrut));
+  }
+  fondTeint = teinter(fondBrut, pal.teinteBalcon);
+  avantTeint = teinter(avantBrut, pal.teinteBalcon);
+  // Fenêtres allumées la nuit
+  if (pal.nuit > 0.05) {
+    const b = ctx2d(fondTeint); b.globalAlpha = clamp(pal.nuit * 1.1, 0, 1);
+    for (const f of fenetres) if (f.allumee) { rect(b, f.x, f.y, f.w, f.h, '#ffcf73'); if (f.h > 2) rect(b, f.x, f.y, f.w, 1, '#fff0b8'); }
+    b.globalAlpha = 1;
+  }
+  document.querySelector('meta[name=theme-color]').setAttribute('content', pal.cielHaut);
+}
+// Sprite teinté selon l'heure (mis en cache jusqu'au prochain changement de palette)
+function teinte(cle, src, couleur) {
+  let c = cacheTeinte.get(cle); if (!c) { c = teinter(src, couleur); cacheTeinte.set(cle, c); } return c;
+}
+
+// Ciel en dégradé tramé (dithering de Bayer), recalculé quand la palette change
+const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+function construireCiel() {
+  calqueCiel = creerCanvas(W, H);
+  const x = calqueCiel.getContext('2d'), img = x.createImageData(W, H);
+  const N = 12, bandes = [];
+  for (let i = 0; i < N; i++) bandes.push(hexRgb(melange(pal.cielHaut, pal.cielBas, i / (N - 1))));
+  for (let y = 0; y < H; y++) {
+    const v = clamp(y / (SPLIT + 24), 0, 1) * (N - 1), i0 = Math.floor(v), fr = v - i0;
+    for (let xx = 0; xx < W; xx++) {
+      const k = fr * 16 > BAYER[(y & 3) * 4 + (xx & 3)] ? Math.min(N - 1, i0 + 1) : i0;
+      const c = bandes[k], o = (y * W + xx) * 4;
+      img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255;
+    }
+  }
+  x.putImageData(img, 0, 0);
+}
+
+// Texture « bloc » façon Minecraft : bruit par pixel + joints de briques facultatifs
+function texture(c, x, y, w, h, base, graine, opts = {}) {
+  const r = mulberry32(graine), v = opts.v ?? 0.08;
+  const fonce = melange(base, '#000000', v), clair = melange(base, '#ffffff', v * 0.9);
+  const joint = opts.joint, bw = opts.bw || 8, bh = opts.bh || 4;
+  for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) {
+    const n = r(); let col = n < 0.3 ? fonce : n > 0.82 ? clair : base;
+    if (joint) {
+      const yy = y + j, xx = x + i + (Math.floor(yy / bh) % 2) * (bw >> 1);
+      if (yy % bh === bh - 1 || xx % bw === 0) col = joint;
+    }
+    c.fillStyle = col; c.fillRect(x + i, y + j, 1, 1);
+  }
+}
+// Petite police 3×5 pour l'enseigne
+const LETTRES = { P: ['111', '101', '111', '100', '100'], H: ['101', '101', '111', '101', '101'], O: ['111', '101', '101', '101', '111'] };
+function ecrire(c, txt, x, y, col) {
+  for (const ch of txt) { LETTRES[ch].forEach((l, j) => { for (let i = 0; i < 3; i++) if (l[i] === '1') rect(c, x + i, y + j, 1, 1, col); }); x += 4; }
+}
+function fenetre(c, x, y, w, h, r, volets = true) {
+  rect(c, x - 1, y - 1, w + 2, h + 2, '#5c3a20');
+  texture(c, x, y, w, h, '#9fd0e8', x * 7 + y, { v: 0.05 });
+  rect(c, x + 1, y + 1, 1, 2, '#e8f6ff'); rect(c, x + 2, y + 1, 1, 1, '#e8f6ff');
+  if (volets) { rect(c, x - 3, y - 1, 2, h + 2, '#4f7f5a'); rect(c, x + w + 1, y - 1, 2, h + 2, '#4f7f5a'); }
+  fenetres.push({ x, y, w, h, allumee: r() < 0.6 });
+}
+function gardeCorps(c, x0, x1, ySol, haut) {
+  const fer = '#2b2733';
+  rect(c, x0, ySol - haut, x1 - x0, 2, fer); rect(c, x0, ySol - haut, x1 - x0, 1, '#5a5468');
+  for (let bx = x0 + 1; bx < x1; bx += 3) rect(c, bx, ySol - haut + 2, 1, haut - 2, fer);
+  rect(c, x1 - 1, ySol - haut, 1, haut, fer);
+}
+function dalle(c, x, y, w, graine) {
+  texture(c, x, y, w, 3, '#a9a9a9', graine, { v: 0.1 });
+  rect(c, x, y, w, 1, '#c8c8c8'); rect(c, x, y + 3, w, 1, '#6f6f6f');
+  rect(c, x, y + 4, 3, 1, '#8a8a8a'); rect(c, x, y + 5, 2, 1, '#8a8a8a'); rect(c, x, y + 6, 1, 1, '#8a8a8a'); // console
+}
+
+// L'immeuble vu de profil, dessiné une fois (couleurs « plein jour ») puis teinté selon l'heure.
+// c = calque du fond ; a = calque de devant (garde-corps de son balcon, fleurs), dessiné après elle.
+function dessinerImmeuble(c, a) {
+  const r = mulberry32(17), F = G.facade;
+  fenetres = [];
+  // --- 1. La ville au loin (à droite) ---
+  let x = F + 2;
+  while (x < W) {
+    const lw = 9 + Math.floor(r() * 10), haut = G.toit + 12 + Math.floor(r() * 26);
+    const coul = r() < 0.5 ? '#b4c0d4' : '#c2bed6';
+    rect(c, x, haut, lw, G.rue - haut, coul); rect(c, x, haut, lw, 1, melange(coul, '#ffffff', 0.3));
+    for (let fy = haut + 3; fy < G.rue - 3; fy += 4) for (let fx = x + 2; fx < x + lw - 2; fx += 3) {
+      rect(c, fx, fy, 1, 2, melange(coul, '#000000', 0.15)); fenetres.push({ x: fx, y: fy, w: 1, h: 2, allumee: r() < 0.35 });
+    }
+    if (r() < 0.4) rect(c, x + 2, haut - 3, 3, 3, melange(coul, '#000000', 0.1));
+    x += lw + (r() < 0.3 ? 2 : 0);
+  }
+  // --- 2. Poteau, fils électriques, arbre ---
+  const P = G.poteau;
+  texture(c, P.x, P.haut, 2, G.rue - P.haut, '#6b6570', 3);
+  rect(c, P.x - 3, P.haut + 3, 8, 1, '#4a4550');
+  for (let k = 0; k < 18; k++) rect(c, P.x - 3 + Math.floor(r() * 7), P.haut + 4 + Math.floor(r() * 12), 1, 1, '#2a2630');
+  for (const f of G.fils) for (let xx = f[0]; xx <= Math.min(W, f[2]); xx++) rect(c, xx, Math.round(yFil(f, xx)), 1, 1, '#2a2630');
+  const ax = W - 17;
+  texture(c, ax, G.rue - 12, 2, 12, '#6b4a2e', 5);
+  for (const [dx, dy] of [[-4, -26], [0, -26], [-8, -22], [-4, -22], [0, -22], [4, -22], [-8, -18], [-4, -18], [0, -18], [4, -18], [-4, -14], [0, -14]])
+    texture(c, ax + dx, G.rue + dy, 4, 4, r() < 0.5 ? '#4f8f3a' : '#5a9c40', 40 + dx * 7 - dy, { v: 0.18 });
+  // --- 3. La rue ---
+  texture(c, F, G.rue, W - F, 3, '#bdb8ad', 8);
+  rect(c, 0, G.rue + 3, W, 1, '#8a857c');
+  texture(c, 0, G.rue + 4, W, H - G.rue - 4, '#4a4a54', 9, { v: 0.12 });
+  for (let dx = 2; dx < W; dx += 10) rect(c, dx, G.rue + 12, 5, 1, '#d8d4c8');
+  c.drawImage(SPR.ascii.scooter, F + 18, G.rue - SPR.ascii.scooter.height + 1);
+  // --- 4. L'immeuble (mur latéral en briques enduites de jaune « Hanoï ») ---
+  texture(c, 0, G.toit, F, G.rue - G.toit, '#e3b552', 11, { joint: '#cfa046', bw: 8, bh: 4 });
+  rect(c, F - 1, G.toit, 1, G.rue - G.toit, '#b98a34');
+  for (const y of [G.balcon, G.etage1]) { texture(c, 0, y, F, 2, '#a9a9a9', y); }
+  // Toit : parapet, château d'eau en inox, antenne, plantes
+  texture(c, 0, G.toit - 3, F + 1, 3, '#b8b8b8', 12); rect(c, 0, G.toit - 3, F + 1, 1, '#d6d6d6');
+  texture(c, 5, G.toit - 13, 11, 8, '#cfd3d9', 13, { v: 0.06 });
+  rect(c, 5, G.toit - 11, 11, 1, '#a8adb5'); rect(c, 5, G.toit - 8, 11, 1, '#a8adb5'); rect(c, 6, G.toit - 14, 9, 1, '#e8ebef');
+  rect(c, 6, G.toit - 5, 1, 2, '#6b6570'); rect(c, 14, G.toit - 5, 1, 2, '#6b6570');
+  rect(c, 26, G.toit - 15, 1, 12, '#4a4550'); rect(c, 23, G.toit - 13, 7, 1, '#4a4550'); rect(c, 24, G.toit - 10, 5, 1, '#4a4550');
+  texture(c, 34, G.toit - 6, 5, 3, '#b5653a', 14); texture(c, 33, G.toit - 11, 7, 5, '#4f8f3a', 15, { v: 0.18 });
+  // Fenêtres du mur latéral
+  fenetre(c, 10, G.toit + 7, 6, 9, r); fenetre(c, 26, G.toit + 7, 6, 9, r);
+  fenetre(c, 10, G.balcon + 5, 6, 8, r); fenetre(c, 26, G.balcon + 5, 6, 8, r);
+  // Climatiseur
+  texture(c, F - 11, G.etage1 - 9, 8, 6, '#dfe2e6', 16, { v: 0.04 });
+  for (let k = 0; k < 3; k++) rect(c, F - 10, G.etage1 - 8 + k * 2, 6, 1, '#9aa0a8');
+  // Portes-fenêtres côté façade
+  rect(c, F - 3, G.balcon - 19, 2, 19, '#3d2a20'); rect(c, F - 3, G.etage1 - 17, 2, 17, '#3d2a20');
+  // --- 5. Rez-de-chaussée : la boutique de phở ---
+  const ys = G.etage1 + 4;
+  rect(c, 7, ys - 1, 17, 9, '#3b1f1a'); rect(c, 8, ys, 15, 7, '#c8433a');
+  ecrire(c, 'PHO', 10, ys + 1, '#f5d04a'); rect(c, 21, ys + 1, 1, 1, '#f5d04a'); rect(c, 19, ys - 1, 1, 1, '#f5d04a'); // accent du « Ở »
+  const vitrine = { x: 5, y: ys + 10, w: F - 12, h: G.rue - ys - 11 };
+  rect(c, vitrine.x - 1, vitrine.y - 1, vitrine.w + 2, vitrine.h + 2, '#5c3a20');
+  texture(c, vitrine.x, vitrine.y, vitrine.w, vitrine.h, '#7a5a48', 17, { v: 0.1 });
+  fenetres.push({ ...vitrine, allumee: true });
+  // Store rayé
+  for (let i = 0; i < 15; i++) rect(c, F + i, G.etage1 + 5 + Math.floor(i / 5), 1, 3, Math.floor(i / 2) % 2 ? '#f2ece0' : '#c8433a');
+  // Petits tabourets rouges sur le trottoir
+  c.drawImage(SPR.ascii.miniTabouret, F + 2, G.rue - 5); c.drawImage(SPR.ascii.miniTabouret, F + 10, G.rue - 5);
+  // --- 6. Balcon du premier étage : plantes, linge qui sèche ---
+  dalle(c, F, G.etage1, 20, 31);
+  texture(c, F + 3, G.etage1 - 3, 5, 3, '#b5653a', 32); texture(c, F + 2, G.etage1 - 9, 7, 6, '#4f8f3a', 33, { v: 0.18 });
+  texture(c, F + 12, G.etage1 - 3, 5, 3, '#b5653a', 34); texture(c, F + 12, G.etage1 - 7, 5, 4, '#5a9c40', 35, { v: 0.18 });
+  rect(c, F + 13, G.etage1 - 8, 1, 1, '#f07ab8'); rect(c, F + 15, G.etage1 - 9, 1, 1, '#f07ab8');
+  gardeCorps(c, F, F + 20, G.etage1, 7);
+  const ligneLinge = G.balcon + 8;
+  rect(c, F, ligneLinge, 20, 1, '#e8e2d6');
+  rect(c, F + 3, ligneLinge + 1, 4, 4, '#6fa8dc'); rect(c, F + 9, ligneLinge + 1, 3, 5, '#e9c46a'); rect(c, F + 14, ligneLinge + 1, 4, 3, '#e7a9a0');
+  // --- 7. Son balcon (dernier étage) ---
+  dalle(c, F, G.balcon, 25, 41);
+  c.drawImage(SPR.ascii.miniTabouret, G.tabouret.x, G.tabouret.y);
+  c.drawImage(SPR.ascii.miniTasse, G.tasse.x, G.tasse.y);
+  gardeCorps(a, F, F + 25, G.balcon, 7);
+  // Bougainvillier qui retombe par-dessus la rambarde
+  for (const [dx, dy] of [[23, -8], [25, -6], [24, -3], [26, 0], [25, 3], [26, 7]]) {
+    ellipsePleine(a, F + dx, G.balcon + dy, 2, 1.6, '#3f7a45');
+    ellipsePleine(a, F + dx + (r() < 0.5 ? -1 : 1), G.balcon + dy, 1.4, 1.2, r() < 0.5 ? '#d94f9a' : '#f07ab8');
+  }
+}
+
+// Étoiles (positions stables)
+let etoiles = [];
+function construireEtoiles() {
+  const r = mulberry32(3); etoiles = [];
+  for (let i = 0; i < 46; i++) etoiles.push({ x: Math.floor(r() * W), y: Math.floor(r() * (SPLIT + 10)), ph: r() * 6.28, v: 0.6 + r() * 2, grande: r() < 0.12 });
+}
+
+
+/* =====================================================================
+   6. MONDE : NUAGES ET PARTICULES
+   ===================================================================== */
+const nuages = [];     // nuages pêchables { def, x, y, vx, phase, etat: 'passe'|'curieux'|'fuit', alpha, verifie }
+const decor = [];      // nuages de décor { cle, x, y, vx, alpha, couche: 'loin'|'pres' }
+const particules = []; // { x, y, vx, vy, vie, vieMax, couleur, type }
+let minuterieApparition = 1, minuterieBrume = 6, minuterieVapeur = 0;
+let temps = 0;
+
+function disponible(def, h) {
+  if (!def.heures) return true;
+  const [a, b] = def.heures;
+  return a <= b ? (h >= a && h < b) : (h >= a || h < b);
+}
+// Tirage pondéré d'un nuage : d'abord la rareté (parmi celles qui ont un nuage disponible à cette heure), puis le nuage
+function tirerNuage() {
+  const candidats = [];
+  for (const r of ORDRE_RARETES) {
+    const liste = NUAGES.filter(n => n.rarete === r && disponible(n, heure));
+    if (liste.length) candidats.push([RARETES[r].poids, liste]);
+  }
+  let total = candidats.reduce((s, c) => s + c[0], 0), x = Math.random() * total;
+  for (const [p, liste] of candidats) { if ((x -= p) < 0) return choisir(liste); }
+  return candidats[0][1][0];
+}
+function faireApparaitreNuage(opts = {}) {
+  const def = tirerNuage(), spr = SPR.nuages[def.id], r = RARETES[def.rarete];
+  const yMax = Math.max(4, SPLIT - spr.height - 3);
+  let y;
+  if (opts.y !== undefined) y = opts.y;
+  else if (jeu.canne && (jeu.etat === 'attente' || jeu.etat === 'lancer') && Math.random() < 0.45) y = cibleBouchon().y - spr.height / 2 + rand(-7, 7);
+  else y = rand(3, yMax);
+  nuages.push({
+    def, x: opts.x !== undefined ? opts.x : -spr.width - 1, y: clamp(y, 2, yMax),
+    vx: (opts.vitesse || rand(4.5, 8.5)) * r.lenteur, phase: rand(0, 6.28),
+    etat: 'passe', alpha: 1, verifie: false, forceCurieux: !!opts.forceCurieux,
+  });
+}
+function faireApparaitreDecor(couche, x) {
+  const cle = couche === 'loin' ? choisir(['loin1', 'loin2', 'loin3']) : choisir(['brume1', 'brume2']);
+  const spr = SPR.decor[cle];
+  decor.push({
+    cle, couche, x: x !== undefined ? x : -spr.width - 1,
+    y: couche === 'loin' ? rand(2, SPLIT * 0.8) : rand(SPLIT * 0.1, SPLIT - spr.height * 0.6),
+    vx: couche === 'loin' ? rand(1.2, 2.6) : rand(13, 19), alpha: couche === 'loin' ? rand(0.45, 0.7) : rand(0.28, 0.42),
+  });
+}
+function particule(p) { particules.push(Object.assign({ vx: 0, vy: 0, vie: 1, couleur: '#ffffff', type: 'px' }, p, { vieMax: p.vie || 1 })); }
+function bouffee(x, y, n, couleur = '#ffffff') {
+  for (let i = 0; i < n; i++) { const a = rand(0, 6.28), v = rand(6, 22); particule({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.7, vie: rand(0.35, 0.8), couleur }); }
+}
+
+function majMonde(dt) {
+  // Nouveaux nuages pêchables
+  minuterieApparition -= dt;
+  if (minuterieApparition <= 0) {
+    minuterieApparition = rand(CONFIG.APPARITION_MIN_S, CONFIG.APPARITION_MAX_S) * (jeu.canne ? 1 : 1.3);
+    if (nuages.length < CONFIG.MAX_NUAGES) faireApparaitreNuage();
+  }
+  // Décor : nuages lointains permanents, brumes de premier plan de temps en temps
+  if (decor.filter(d => d.couche === 'loin').length < 6 && Math.random() < dt * 0.4) faireApparaitreDecor('loin');
+  minuterieBrume -= dt;
+  if (minuterieBrume <= 0) { minuterieBrume = rand(9, 20); faireApparaitreDecor('pres'); }
+
+  for (let i = decor.length - 1; i >= 0; i--) { const d = decor[i]; d.x += d.vx * dt; if (d.x > W + 2) decor.splice(i, 1); }
+
+  for (let i = nuages.length - 1; i >= 0; i--) {
+    const n = nuages[i], spr = SPR.nuages[n.def.id], r = RARETES[n.def.rarete];
+    if (n.etat === 'passe') n.x += n.vx * dt;
+    else if (n.etat === 'curieux') {   // il s'approche doucement du bouchon
+      const b = cibleBouchon(), k = Math.min(1, dt * 1.3);
+      n.x += (b.x - spr.width / 2 - n.x) * k; n.y += (b.y - spr.height / 2 + 1 - n.y) * k;
+    } else if (n.etat === 'fuit') { n.x += 28 * dt; n.y -= 3 * dt; n.alpha -= dt * 0.9; }
+    if (r.scintille && n.alpha > 0.5 && Math.random() < dt * r.scintille)
+      particule({ x: n.x + rand(2, spr.width - 2), y: n.y + rand(1, spr.height - 2), vy: -2, vie: 0.8, couleur: r.etincelle, type: 'etincelle' });
+    if (n.x > W + 2 || n.alpha <= 0) nuages.splice(i, 1);
+  }
+  // Vapeur de l'egg coffee
+  minuterieVapeur -= dt;
+  if (minuterieVapeur <= 0) { minuterieVapeur = rand(0.25, 0.5); particule({ x: G.tasse.x + 1 + rand(0, 2), y: G.tasse.y - 1, vy: -3.5, vx: rand(-0.6, 0.6), vie: 2.2, couleur: '#ffffff', type: 'vapeur' }); }
+
+  for (let i = particules.length - 1; i >= 0; i--) {
+    const p = particules[i]; p.vie -= dt; if (p.vie <= 0) { particules.splice(i, 1); continue; }
+    p.x += p.vx * dt; p.y += p.vy * dt;
+    if (p.type === 'vapeur') p.vx = Math.sin(temps * 2 + p.y * 0.4) * 1.5;
+    else { p.vx *= 1 - dt * 2; p.vy *= 1 - dt * 2; }
+  }
+}
+
+
+/* =====================================================================
+   7. MACHINE À ÉTATS DE LA PÊCHE
+   repos → lancer → attente → grignote → touche → remontee → carte → (lancer…)
+                                  ↓ (trop tôt)  ↓ (trop tard)
+                               attente       attente
+   rembobine : quand on range la canne
+   ===================================================================== */
+const jeu = {
+  canne: false, etat: 'repos', minuterie: 0, attente: 0, envoye: false, trempe: 0,
+  bouchon: { x: 0, y: 0, fx: 0.5, fy: 0.5 }, depart: { x: 0, y: 0 },
+  nuage: null, prise: null, remontee: null,
+};
+const cibleBouchon = () => ({ x: Math.round(jeu.bouchon.fx * W), y: Math.round(jeu.bouchon.fy * SPLIT) });
+
+function lancer() {
+  jeu.bouchon.fx = rand(0.24, 0.76); jeu.bouchon.fy = rand(0.32, 0.72);
+  jeu.etat = 'lancer'; jeu.minuterie = 0; jeu.envoye = false;
+  for (const n of nuages) n.verifie = false;
+}
+function basculerCanne() {
+  if (jeu.etat === 'touche') { taper(); return; }        // pendant la touche, le gros bouton sert à ferrer
+  jeu.canne = !jeu.canne;
+  if (jeu.canne) { if (jeu.etat === 'repos' || jeu.etat === 'rembobine') lancer(); }
+  else if (['lancer', 'attente', 'grignote'].includes(jeu.etat)) {
+    if (jeu.nuage) { jeu.nuage.etat = 'fuit'; jeu.nuage = null; }
+    jeu.depart = { x: jeu.bouchon.x, y: jeu.bouchon.y }; jeu.etat = 'rembobine'; jeu.minuterie = 0;
+  }
+  majBouton(); sauverReglages();
+}
+// Tape sur l'écran
+function taper() {
+  if (jeu.etat === 'grignote') rater('tropTot');
+  else if (jeu.etat === 'touche') ferrer();
+}
+function rater(raison) {
+  if (jeu.nuage) { jeu.nuage.etat = 'fuit'; jeu.nuage = null; }
+  bulle(choisir(TEXTES[raison]));
+  jeu.etat = 'attente'; jeu.attente = 0; jeu.envoye = false;
+  majBouton();
+}
+function ferrer() {
+  const n = jeu.nuage; jeu.nuage = null;
+  const i = nuages.indexOf(n); if (i >= 0) nuages.splice(i, 1);
+  const spr = SPR.nuages[n.def.id];
+  bouffee(n.x + spr.width / 2, n.y + spr.height / 2, 14);
+  const objets = OBJETS_SPECIAUX.filter(o => o.actif !== false);
+  if (objets.length && Math.random() < CONFIG.CHANCE_OBJET_SPECIAL) {
+    const o = choisir(objets);
+    jeu.prise = { def: o, special: true, sprite: SPR.objets[o.id] };
+    bouffee(jeu.bouchon.x, jeu.bouchon.y, 10, '#ffe9a8');
+  } else jeu.prise = { def: n.def, special: false, sprite: spr };
+  jeu.prise.infos = enregistrerPrise(jeu.prise.def.id);
+  jeu.remontee = { p: 0, chute: false, aRetombe: false, retombe: !!jeu.prise.def.retombe, depart: { x: jeu.bouchon.x, y: jeu.bouchon.y } };
+  jeu.etat = 'remontee';
+  majBouton();
+}
+function vibrer(motif) { if (!CONFIG.VIBRATION) return; try { navigator.vibrate && navigator.vibrate(motif); } catch (e) { } }
+
+function majJeu(dt) {
+  majPointe();
+  const b = jeu.bouchon, cible = cibleBouchon();
+  switch (jeu.etat) {
+    case 'repos': b.x = G.pointe.x; b.y = G.pointe.y; break;
+
+    case 'lancer': {   // le bouchon s'envole en arc jusque dans les nuages
+      jeu.minuterie += dt; const k = Math.min(1, jeu.minuterie / 0.75), e = 1 - (1 - k) * (1 - k);
+      b.x = lerp(G.pointe.x, cible.x, e); b.y = lerp(G.pointe.y, cible.y, e) - Math.sin(Math.PI * k) * 18;
+      if (k >= 1) { jeu.etat = 'attente'; jeu.attente = 0; bouffee(cible.x, cible.y, 8); }
+      break;
+    }
+    case 'attente': {
+      b.x = cible.x; b.y = cible.y + Math.round(Math.sin(temps * 2.2));
+      jeu.attente += dt;
+      if (jeu.attente > CONFIG.ATTENTE_MIN_S) {
+        for (const n of nuages) {
+          if (n.etat !== 'passe' || n.verifie) continue;
+          const spr = SPR.nuages[n.def.id];
+          const dx = Math.abs(n.x + spr.width / 2 - cible.x), dy = Math.abs(n.y + spr.height / 2 - cible.y);
+          if (dx < CONFIG.RAYON_X + spr.width * 0.2 && dy < CONFIG.RAYON_Y) {
+            n.verifie = true;
+            if (n.forceCurieux || Math.random() < CONFIG.CURIOSITE) {
+              n.etat = 'curieux'; jeu.nuage = n; jeu.etat = 'grignote';
+              jeu.minuterie = rand(CONFIG.GRIGNOTE_MIN_S, CONFIG.GRIGNOTE_MAX_S) + 0.8; break;
+            }
+          }
+        }
+      }
+      // Personne ne vient ? On envoie un nuage exprès vers le bouchon
+      if (jeu.etat === 'attente' && !jeu.envoye && jeu.attente > CONFIG.ATTENTE_MAX_S) {
+        jeu.envoye = true; const tmp = tirerNuage(); const h = SPR.nuages[tmp.id].height;
+        faireApparaitreNuage({ y: cible.y - h / 2, vitesse: 14, forceCurieux: true });
+      }
+      break;
+    }
+    case 'grignote': {   // le nuage s'approche et goûte : petites secousses (taper ici = trop tôt)
+      jeu.minuterie -= dt; jeu.trempe -= dt;
+      if (jeu.minuterie < 1.6 && jeu.trempe < -0.25 && Math.random() < dt * 3) { jeu.trempe = 0.12; }
+      b.x = cible.x; b.y = cible.y + (jeu.trempe > 0 ? 1 : 0) + Math.round(Math.sin(temps * 2.2) * 0.6);
+      if (jeu.minuterie <= 0) {
+        jeu.etat = 'touche'; jeu.minuterie = RARETES[jeu.nuage.def.rarete].fenetreMs / 1000;
+        vibrer([45, 40, 60]); bouffee(cible.x, cible.y, 6, '#fff3c0'); majBouton();
+      }
+      if (!jeu.nuage || jeu.nuage.etat !== 'curieux') { jeu.etat = 'attente'; jeu.attente = 0; }
+      break;
+    }
+    case 'touche': {     // ça mord ! fenêtre pour ferrer
+      jeu.minuterie -= dt;
+      b.x = cible.x + (Math.floor(temps * 22) % 2 ? 1 : -1); b.y = cible.y + 2;
+      if (jeu.minuterie <= 0) rater('tropTard');
+      break;
+    }
+    case 'remontee': {   // la prise descend le long de la ligne jusqu'au balcon
+      const R = jeu.remontee;
+      if (R.chute) { R.p -= dt * 1.6; if (R.p <= 0) { R.p = 0; R.chute = false; R.aRetombe = true; bouffee(R.depart.x, R.depart.y, 8, '#c9c3cc'); } }
+      else {
+        R.p += dt / (R.aRetombe ? 1.9 : 1.5);
+        if (R.retombe && !R.aRetombe && R.p >= 0.8) { R.chute = true; bulle(TEXTES.rocher); }
+        if (R.p >= 1) { R.p = 1; jeu.etat = 'carte'; afficherCarte(jeu.prise); }
+      }
+      const e = adoucir(clamp(R.p, 0, 1));
+      b.x = lerp(R.depart.x, G.pointe.x, e); b.y = lerp(R.depart.y, G.pointe.y + 4, e);
+      break;
+    }
+    case 'carte': b.x = G.pointe.x; b.y = G.pointe.y; break;
+
+    case 'rembobine': {
+      jeu.minuterie += dt; const k = Math.min(1, jeu.minuterie / 0.6), e = adoucir(k);
+      b.x = lerp(jeu.depart.x, G.pointe.x, e); b.y = lerp(jeu.depart.y, G.pointe.y, e);
+      if (k >= 1) jeu.etat = 'repos';
+      break;
+    }
+  }
+}
+
+
+/* =====================================================================
+   8. RENDU
+   ===================================================================== */
+function dessiner() {
+  const c = ctx;
+  c.globalAlpha = 1; c.globalCompositeOperation = 'source-over';
+  c.drawImage(calqueCiel, 0, 0);
+
+  // --- Le ciel (moitié haute) ---
+  c.save(); c.beginPath(); c.rect(0, 0, W, SPLIT + 30); c.clip();
+  dessinerAstres(c);
+  for (const d of decor) if (d.couche === 'loin') { c.globalAlpha = d.alpha; c.drawImage(teinte(d.cle, SPR.decor[d.cle], pal.teinteNuages), Math.round(d.x), Math.round(d.y)); }
+  c.globalAlpha = 1;
+  for (const n of nuages) dessinerNuage(c, n);
+  for (const d of decor) if (d.couche === 'pres') { c.globalAlpha = d.alpha; c.drawImage(teinte(d.cle, SPR.decor[d.cle], pal.teinteNuages), Math.round(d.x), Math.round(d.y)); }
+  c.globalAlpha = 1;
+  c.restore();
+
+  // --- L'immeuble et elle (moitié basse) ---
+  c.drawImage(fondTeint, 0, 0);
+  dessinerLanterne(c);
+  dessinerPerso(c);
+  dessinerCanne(c);
+  c.drawImage(avantTeint, 0, 0);
+
+  // --- Ligne, bouchon, prise ---
+  dessinerLigne(c);
+  if (jeu.etat === 'remontee') {
+    const s = jeu.prise.sprite, sp = jeu.prise.special ? s : teinte('n:' + jeu.prise.def.id, s, pal.teinteNuages);
+    c.drawImage(sp, Math.round(jeu.bouchon.x - s.width / 2), Math.round(jeu.bouchon.y - s.height / 2));
+  } else if (jeu.etat !== 'repos' && jeu.etat !== 'carte') dessinerBouchon(c);
+
+  // --- Particules ---
+  for (const p of particules) {
+    const a = clamp(p.vie / p.vieMax, 0, 1), x = Math.round(p.x), y = Math.round(p.y);
+    c.fillStyle = p.couleur;
+    if (p.type === 'vapeur') { c.globalAlpha = a * 0.45; c.fillRect(x, y, 1, 1); }
+    else if (p.type === 'etincelle') {
+      const pic = a > 0.3 && a < 0.7; c.globalAlpha = 0.9;
+      c.fillRect(x, y, 1, 1); if (pic) { c.fillRect(x - 1, y, 1, 1); c.fillRect(x + 1, y, 1, 1); c.fillRect(x, y - 1, 1, 1); c.fillRect(x, y + 1, 1, 1); }
+    } else { c.globalAlpha = a; c.fillRect(x, y, 1, 1); }
+  }
+  c.globalAlpha = 1;
+}
+
+function dessinerAstres(c) {
+  const h = heure;
+  // Soleil : arc de 5h40 à 19h10
+  if (h > 5.6 && h < 19.2) {
+    const p = (h - 5.6) / (19.2 - 5.6), x = Math.round(W * (0.12 + 0.76 * p));
+    const y = Math.round(SPLIT * 0.95 - Math.sin(Math.PI * p) * SPLIT * 0.75);
+    const col = melange('#fff6c8', '#ff9a60', clamp((1 - Math.sin(Math.PI * p)) * 1.6 - 0.4, 0, 1));
+    c.globalAlpha = 0.25; disque(c, x, y, 7, col); c.globalAlpha = 1; disque(c, x, y, 4, col);
+  }
+  if (pal.nuit > 0.02) {
+    // Étoiles qui scintillent
+    for (const e of etoiles) {
+      c.globalAlpha = pal.nuit * (0.45 + 0.55 * Math.sin(temps * e.v + e.ph) ** 2);
+      rect(c, e.x, e.y, 1, 1, '#fffbe8');
+      if (e.grande && Math.sin(temps * e.v + e.ph) > 0.7) { rect(c, e.x - 1, e.y, 3, 1, '#fffbe8'); rect(c, e.x, e.y - 1, 1, 3, '#fffbe8'); }
+    }
+    // Lune
+    c.globalAlpha = pal.nuit;
+    const lx = Math.round(W * 0.8), ly = Math.round(SPLIT * 0.16);
+    c.globalAlpha = pal.nuit * 0.2; disque(c, lx, ly, 7, '#f3efd6');
+    c.globalAlpha = pal.nuit; disque(c, lx, ly, 4, '#f3efd6');
+    rect(c, lx - 2, ly - 1, 2, 2, '#d8d2b4'); rect(c, lx + 1, ly + 2, 1, 1, '#d8d2b4');
+    c.globalAlpha = 1;
+  }
+}
+
+function dessinerNuage(c, n) {
+  const brut = SPR.nuages[n.def.id], r = RARETES[n.def.rarete], forme = FORMES[n.def.forme];
+  const ond = r.ondule && n.etat === 'passe' ? Math.sin(temps * 0.9 + n.phase) * 1.6 : 0;
+  const x = Math.round(n.x), y = Math.round(n.y + ond);
+  if (r.halo) {   // contour lumineux qui pulse pour les épiques / légendaires
+    const halo = cacheHalo(n.def.id, brut, r.halo);
+    c.globalAlpha = n.alpha * (0.35 + 0.3 * Math.sin(temps * 3 + n.phase));
+    c.drawImage(halo, x - 1, y); c.drawImage(halo, x + 1, y); c.drawImage(halo, x, y - 1); c.drawImage(halo, x, y + 1);
+  }
+  c.globalAlpha = n.alpha * (forme.alpha || 1);
+  c.drawImage(forme.lumineux ? brut : teinte('n:' + n.def.id, brut, pal.teinteNuages), x, y);
+  c.globalAlpha = 1;
+}
+const halos = new Map();
+function cacheHalo(id, src, coul) { let h = halos.get(id); if (!h) { h = silhouette(src, coul); halos.set(id, h); } return h; }
+
+function dessinerLanterne(c) {
+  const L = G.lanterne, osc = Math.round(Math.sin(temps * 1.3) * 1);
+  if (pal.nuit > 0.05) {   // halo chaud la nuit
+    c.globalAlpha = 0.12 * pal.nuit; disque(c, L.x + osc, L.y + 8, 10, '#ffb060');
+    c.globalAlpha = 0.22 * pal.nuit; disque(c, L.x + osc, L.y + 8, 6, '#ffc070'); c.globalAlpha = 1;
+  }
+  ligne(c, L.x, L.y, L.x + osc, L.y + 2, '#2a2630');
+  const spr = SPR.ascii.lanterne;
+  c.drawImage(teinte('lanterne', spr, melange(pal.teinteBalcon, '#ffffff', pal.nuit * 0.6)), L.x + osc - 3, L.y + 3);
+}
+
+// ---- Elle, sur son balcon ----
+function variantePerso() {
+  if (!jeu.canne && (jeu.etat === 'repos' || jeu.etat === 'carte')) return 'repos';
+  if (jeu.etat === 'remontee' && jeu.remontee.p < 0.35 && !jeu.remontee.aRetombe) return 'ferre';
+  return 'peche';
+}
+// Position de la pointe de la canne selon la pose (appelée à chaque image)
+function majPointe() {
+  const v = variantePerso();
+  if (v === 'repos') { G.mains = null; G.pointe = { ...G.canneRangee.pointe }; return; }
+  const [mx, my] = MAINS[v], hx = G.perso.x + mx, hy = G.perso.y + my;
+  G.mains = { x: hx, y: hy };
+  if (v === 'ferre') G.pointe = { x: hx + 9, y: hy - 26 };
+  else if (jeu.etat === 'touche') G.pointe = { x: hx + 18, y: hy - 19 + (Math.floor(temps * 22) % 2) };  // la canne plie
+  else G.pointe = { x: hx + 16, y: hy - 24 };
+}
+function dessinerPerso(c) {
+  const v = variantePerso(), cle = v + ((temps % 4.3) < 0.13 ? 'B' : '');   // clignement des yeux
+  const spr = teinte('perso:' + cle, SPR.perso[cle], melange(pal.teinteBalcon, '#ffffff', 0.3));
+  c.drawImage(spr, G.perso.x + (jeu.etat === 'touche' ? 1 : 0), G.perso.y);
+}
+function dessinerCanne(c) {
+  if (!G.mains) {
+    const { base, pointe } = G.canneRangee;
+    ligne(c, base.x, base.y, pointe.x, pointe.y, '#5a3a22');
+    ligne(c, base.x, base.y, lerp(base.x, pointe.x, 0.2), lerp(base.y, pointe.y, 0.2), '#c9a06a');
+    return;
+  }
+  const m = G.mains, T = G.pointe;
+  ligne(c, m.x - 3, m.y + 4, T.x, T.y, '#5a3a22');
+  ligne(c, m.x - 3, m.y + 4, m.x, m.y, '#c9a06a');
+  rect(c, m.x - 2, m.y + 3, 2, 2, '#9aa0a8');
+}
+
+function dessinerLigne(c) {
+  const T = G.pointe, b = jeu.bouchon;
+  c.fillStyle = pal.nuit > 0.5 ? 'rgba(235,240,255,0.7)' : 'rgba(255,255,255,0.8)';
+  if (jeu.etat === 'repos' || jeu.etat === 'carte') {   // ligne pendante avec l'hameçon
+    c.fillRect(T.x, T.y + 1, 1, 5); rect(c, T.x, T.y + 6, 1, 1, '#c0c6cc'); rect(c, T.x + 1, T.y + 5, 1, 1, '#c0c6cc');
+    return;
+  }
+  // Courbe quadratique (légèrement détendue, tendue pendant la touche)
+  const tendue = jeu.etat === 'touche' || jeu.etat === 'remontee';
+  const ax = b.x, ay = jeu.etat === 'remontee' ? b.y : b.y - 3;
+  const mx = (T.x + ax) / 2 + (tendue ? 0 : 5), my = (T.y + ay) / 2 + (tendue ? 0 : 6);
+  const n = Math.ceil(Math.hypot(ax - T.x, ay - T.y) * 1.2);
+  for (let i = 0; i <= n; i++) {
+    const t = i / n, u = 1 - t;
+    c.fillRect(Math.round(u * u * T.x + 2 * u * t * mx + t * t * ax), Math.round(u * u * T.y + 2 * u * t * my + t * t * ay), 1, 1);
+  }
+}
+
+function dessinerBouchon(c) {
+  const x = Math.round(jeu.bouchon.x), y = Math.round(jeu.bouchon.y);
+  rect(c, x, y - 3, 1, 1, '#e04a3a'); rect(c, x - 1, y - 2, 3, 2, '#e04a3a'); rect(c, x - 1, y - 2, 1, 1, '#ff8a70');
+  rect(c, x - 1, y, 3, 1, '#fafafa'); rect(c, x, y + 1, 1, 1, '#fafafa');
+  if (jeu.etat === 'touche' && Math.floor(temps * 8) % 2 === 0) {   // « ! » au-dessus du bouchon
+    rect(c, x - 1, y - 13, 3, 7, '#3b2a1e'); rect(c, x - 1, y - 5, 3, 3, '#3b2a1e');
+    rect(c, x, y - 12, 1, 5, '#fff3c0'); rect(c, x, y - 4, 1, 1, '#fff3c0');
+  }
+}
+
+
+/* =====================================================================
+   9. INTERFACE : BOUTONS, BULLE, CARTE, CARNET, SAUVEGARDE, PWA
+   ===================================================================== */
+const el = (id) => document.getElementById(id);
+const boutonPeche = el('bouton-peche');
+
+function majBouton() {
+  boutonPeche.classList.toggle('on', jeu.canne);
+  boutonPeche.classList.toggle('ferrer', jeu.etat === 'touche');
+  boutonPeche.setAttribute('aria-pressed', String(jeu.canne));
+  el('libelle-peche').textContent = jeu.etat === 'touche' ? TEXTES.ferrer : (jeu.canne ? TEXTES.enPeche : TEXTES.pecher);
+}
+let minuterieBulle = 0;
+function bulle(texte, ms = 2600) {
+  const b = el('bulle'); b.textContent = texte; b.classList.add('visible');
+  clearTimeout(minuterieBulle); minuterieBulle = setTimeout(() => b.classList.remove('visible'), ms);
+}
+
+// ---- Sauvegarde (localStorage, toujours dans un try/catch) ----
+const CLE_SAUVEGARDE = 'pecher-dans-les-nuages:v1';
+let sauvegarde = { prises: {}, reglages: {} };
+function charger() {
+  try {
+    const s = localStorage.getItem(CLE_SAUVEGARDE);
+    if (s) { const o = JSON.parse(s); if (o && typeof o === 'object') sauvegarde = { prises: o.prises || {}, reglages: o.reglages || {} }; }
+  } catch (e) { /* stockage indisponible : on joue sans sauvegarde */ }
+}
+function sauver() { try { localStorage.setItem(CLE_SAUVEGARDE, JSON.stringify(sauvegarde)); } catch (e) { } }
+function sauverReglages() { sauvegarde.reglages.vu = true; sauver(); }
+function enregistrerPrise(id) {
+  const avant = sauvegarde.prises[id] || 0;
+  sauvegarde.prises[id] = avant + 1; sauver(); majCompteurCarnet();
+  return { nouveau: avant === 0, compte: avant + 1 };
+}
+function toutesLesEntrees() { return [...NUAGES, ...OBJETS_SPECIAUX.filter(o => o.actif !== false)]; }
+function completion() {
+  const tout = toutesLesEntrees(); const faits = tout.filter(e => sauvegarde.prises[e.id] > 0).length;
+  return { faits, total: tout.length };
+}
+function majCompteurCarnet() { const c = completion(); el('compteur-carnet').textContent = `${c.faits}/${c.total}`; }
+
+// Dessine un sprite agrandi (pixels nets) dans un canvas d'interface
+function vignette(canvasEl, src, tailleMax, silh) {
+  const k = Math.max(1, Math.floor(tailleMax / Math.max(src.width, src.height)));
+  canvasEl.width = src.width * k; canvasEl.height = src.height * k;
+  const x = ctx2d(canvasEl); x.clearRect(0, 0, canvasEl.width, canvasEl.height);
+  x.drawImage(silh ? silhouette(src, '#b3a78f') : src, 0, 0, canvasEl.width, canvasEl.height);
+}
+const rareteDe = (def) => def.rarete ? RARETES[def.rarete] : RARETE_OBJET;
+
+// ---- Carte de prise ----
+function afficherCarte(prise) {
+  const def = prise.def, r = rareteDe(def);
+  el('carte-rarete').textContent = r.nom; el('carte-rarete').style.background = r.couleur;
+  el('carte-nouveau').style.display = prise.infos.nouveau ? 'block' : 'none';
+  el('carte-nom').textContent = def.nom;
+  el('carte-desc').textContent = def.description;
+  el('carte-compte').textContent = prise.infos.nouveau ? TEXTES.nouvelle : TEXTES.compte(prise.infos.compte);
+  el('carte-cadre').style.background = `linear-gradient(${pal.cielHaut}, ${pal.cielBas})`;
+  el('carte-cadre').style.width = 'min(70vw, 260px)';
+  vignette(el('carte-sprite'), prise.sprite, 200);
+  if (prise.infos.nouveau) vibrer(25);
+  el('voile-carte').classList.add('ouvert');
+}
+function fermerCarte() {
+  el('voile-carte').classList.remove('ouvert');
+  if (jeu.etat !== 'carte') return;
+  if (jeu.canne) lancer(); else jeu.etat = 'repos';
+  majBouton();
+}
+
+// ---- Carnet de collection ----
+function ouvrirCarnet() {
+  const liste = el('carnet-liste'); liste.innerHTML = '';
+  const c = completion();
+  el('carnet-progression').textContent = TEXTES.progression(c.faits, c.total);
+  el('carnet-barre').style.width = (100 * c.faits / c.total) + '%';
+  const sections = ORDRE_RARETES.map(r => [RARETES[r], NUAGES.filter(n => n.rarete === r)]);
+  sections.push([RARETE_OBJET, OBJETS_SPECIAUX.filter(o => o.actif !== false)]);
+  for (const [r, entrees] of sections) {
+    if (!entrees.length) continue;
+    const nb = entrees.filter(e => sauvegarde.prises[e.id] > 0).length;
+    const t = document.createElement('div'); t.className = 'section'; t.style.borderColor = r.couleur; t.style.color = r.couleur;
+    t.innerHTML = `<span>${r.nom}</span><span>${nb}/${entrees.length}</span>`; liste.appendChild(t);
+    for (const e of entrees) {
+      const n = sauvegarde.prises[e.id] || 0, connu = n > 0;
+      const div = document.createElement('div'); div.className = 'entree' + (connu ? '' : ' inconnue');
+      const v = document.createElement('div'); v.className = 'vignette'; const cv = document.createElement('canvas'); v.appendChild(cv);
+      vignette(cv, e.rarete ? SPR.nuages[e.id] : SPR.objets[e.id], 80, !connu);
+      const txt = document.createElement('div'); txt.className = 'txt';
+      const nom = document.createElement('div'); nom.className = 'nom'; nom.textContent = connu ? e.nom : '???';
+      const meta = document.createElement('div'); meta.className = 'meta'; meta.style.color = r.couleur;
+      meta.textContent = connu ? TEXTES.metaConnu(r.nom, n) : r.nom;
+      const d = document.createElement('div'); d.className = 'd';
+      d.textContent = connu ? e.description : (e.indice || TEXTES.pasEncore);
+      txt.append(nom, meta, d); div.append(v, txt); liste.appendChild(div);
+    }
+  }
+  el('voile-carnet').classList.add('ouvert'); liste.scrollTop = 0;
+}
+
+// ---- PWA : manifest de secours généré à la volée + service worker si présent ----
+function dessinerIcone(marge) {   // icône 32×32 pixel art (marge > 0 pour la version « maskable »)
+  const T = 32 + marge * 2, c = creerCanvas(T, T), x = ctx2d(c);
+  const img = x.createImageData(T, T);
+  for (let y = 0; y < T; y++) for (let xx = 0; xx < T; xx++) {
+    const v = (y / (T - 1)) * 7, i0 = Math.floor(v), k = (v - i0) * 16 > BAYER[(y & 3) * 4 + (xx & 3)] ? i0 + 1 : i0;
+    const col = hexRgb(melange('#5fa8e8', '#ffc0b0', clamp(k / 7, 0, 1))); img.data.set([...col, 255], (y * T + xx) * 4);
+  }
+  x.putImageData(img, 0, 0);
+  const nuage = genererNuage({ l: 26, h: 15, pal: 'blanc', dessin(f) { f.ell(8, 9, 5.5, 4.5); f.ell(13, 6.5, 6.5, 5.5); f.ell(19, 9, 5, 4.5); f.rect(3, 9, 20, 4); } });
+  x.drawImage(nuage, marge + 3, marge + 5);
+  ligne(x, marge + 25, marge + 31, marge + 16, marge + 22, 'rgba(255,255,255,0.9)');
+  rect(x, marge + 15, marge + 18, 3, 2, '#e04a3a'); rect(x, marge + 16, marge + 17, 1, 1, '#e04a3a'); rect(x, marge + 15, marge + 20, 3, 1, '#fafafa');
+  return c;
+}
+function iconePNG(taille, marge) {
+  const src = dessinerIcone(marge), c = creerCanvas(taille, taille), x = ctx2d(c);
+  x.drawImage(src, 0, 0, taille, taille); return c.toDataURL('image/png');
+}
+async function installerPWA() {
+  let fichierPresent = false;
+  if (location.protocol.startsWith('http')) {
+    try { const r = await fetch('manifest.webmanifest', { cache: 'no-store' }); fichierPresent = r.ok; } catch (e) { }
+  }
+  if (!fichierPresent) {
+    const debut = location.href.split('#')[0];
+    const manifest = {
+      name: 'Fishing in the Clouds', short_name: 'Clouds', start_url: debut, scope: debut.replace(/[^/]*$/, ''),
+      display: 'standalone', orientation: 'portrait', background_color: '#14162a', theme_color: '#5fa8e8', lang: 'en',
+      icons: [
+        { src: iconePNG(192, 0), sizes: '192x192', type: 'image/png', purpose: 'any' },
+        { src: iconePNG(512, 0), sizes: '512x512', type: 'image/png', purpose: 'any' },
+        { src: iconePNG(512, 5), sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      ],
+    };
+    el('lien-manifest').href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest));
+    el('lien-icone-apple').href = iconePNG(180, 0);
+  } else if ('serviceWorker' in navigator) {
+    try { navigator.serviceWorker.register('sw.js').catch(() => { }); } catch (e) { }
+  }
+}
+
+
+/* =====================================================================
+   10. DÉMARRAGE ET BOUCLE DE JEU
+   ===================================================================== */
+function demarrer() {
+  charger();
+  construireSprites();
+  vignette(el('icone-carnet'), SPR.ascii.livre, 16);
+  redimensionner();
+  // Le ciel n'est jamais vide au lancement
+  for (let i = 0; i < 4; i++) faireApparaitreNuage({ x: rand(-10, W - 20) });
+  for (let i = 0; i < 5; i++) faireApparaitreDecor('loin', rand(-10, W));
+  majBouton(); majCompteurCarnet();
+  if (!sauvegarde.reglages.vu) setTimeout(() => bulle(TEXTES.premiereVisite, 5000), 800);
+
+  // Entrées
+  boutonPeche.addEventListener('click', (e) => { e.stopPropagation(); basculerCanne(); });
+  el('bouton-carnet').addEventListener('click', (e) => { e.stopPropagation(); ouvrirCarnet(); });
+  el('carnet-fermer').addEventListener('click', () => el('voile-carnet').classList.remove('ouvert'));
+  el('voile-carnet').addEventListener('click', (e) => { if (e.target === el('voile-carnet')) el('voile-carnet').classList.remove('ouvert'); });
+  el('carte-garder').addEventListener('click', fermerCarte);
+  el('voile-carte').addEventListener('click', (e) => { if (e.target === el('voile-carte')) fermerCarte(); });
+  // Taper n'importe où sur la scène pour ferrer (réagit dès le contact, pour être précis)
+  window.addEventListener('pointerdown', (e) => { if (e.target.closest('button, .voile')) return; taper(); });
+
+  window.addEventListener('resize', redimensionner);
+  if (window.viewport && 'onsegmentschange' in window.viewport) window.viewport.addEventListener('segmentschange', redimensionner);
+  installerPWA();
+
+  let dernier = performance.now(), minuteriePalette = 0;
+  function boucle(t) {
+    const dt = Math.min(0.05, Math.max(0, (t - dernier) / 1000)); dernier = t; temps += dt;
+    minuteriePalette -= dt; if (minuteriePalette <= 0) { minuteriePalette = 10; majPalette(false); }
+    majMonde(dt); majJeu(dt); dessiner();
+    requestAnimationFrame(boucle);
+  }
+  requestAnimationFrame(boucle);
+}
+// Accès de test depuis la console : window.PDN
+window.PDN = { jeu, nuages, CONFIG, ouvrirCarnet, faireApparaitreNuage, ferrer, sauvegarde: () => sauvegarde, dessinerIcone };
+demarrer();
+</script>
+</body>
+</html>
