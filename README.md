@@ -25,7 +25,7 @@ Si `index.html` est ouvert seul (sans les autres fichiers), il génère lui-mêm
 
 ## Modifier le jeu
 Tout ce qui est éditable est en haut du `<script>` de `index.html`, section **« 1. DONNÉES ÉDITABLES »** :
-- `CONFIG` : chance d'objet spécial (`CHANCE_OBJET_SPECIAL: 0.05`), délais, taille des pixels…
+- `CONFIG` : chance d'objet spécial (`CHANCE_OBJET_SPECIAL: 0.11`), objet garanti à la première prise (`PREMIERE_PRISE`), délais, taille des pixels…
 - `RARETES` : poids d'apparition, durée de la fenêtre de ferrage.
 - `NUAGES` : noms, descriptions, heures de passage, indices du carnet.
 - `OBJETS_SPECIAUX` : souvenirs du voyage. **Les emplacements `souvenir1` à `souvenir5` sont à remplir** (nom + description,

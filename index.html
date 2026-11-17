@@ -12,6 +12,7 @@
 <!-- Manifest PWA : le fichier manifest.webmanifest est utilisé s'il existe (GitHub Pages).
      Si la page est ouverte seule, le script le remplace par un manifest généré à la volée. -->
 <link rel="manifest" id="lien-manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" id="lien-icone-apple" href="icons/icon-192.png">
 <style>
   /* POLICE-DEBUT : police pixel générée par outils/police.py (ne pas éditer à la main) */
@@ -212,7 +213,8 @@
 
 // ---- Réglages généraux ----
 const CONFIG = {
-  CHANCE_OBJET_SPECIAL: 0.05,  // probabilité qu'une prise soit un objet spécial au lieu d'un nuage (0.05 = 5 %)
+  CHANCE_OBJET_SPECIAL: 0.11,  // probabilité qu'une prise soit un objet spécial au lieu d'un nuage (0.11 = 11 %)
+  PREMIERE_PRISE: 'souvenir5', // id de l'objet garanti à la toute première prise (null pour désactiver)
   ATTENTE_MIN_S: 1.6,          // délai minimum après le lancer avant qu'un nuage puisse s'intéresser au bouchon
   ATTENTE_MAX_S: 10,           // au-delà, un nuage est envoyé exprès vers le bouchon (pour ne jamais attendre trop)
   CURIOSITE: 0.7,              // probabilité qu'un nuage qui passe près du bouchon s'y intéresse
@@ -1184,8 +1186,9 @@ function ferrer() {
   const spr = n.spr;
   bouffee(n.x + spr.width / 2, n.y + spr.height / 2, 14);
   const objets = OBJETS_SPECIAUX.filter(o => o.actif !== false);
-  if (objets.length && Math.random() < CONFIG.CHANCE_OBJET_SPECIAL) {
-    const o = choisir(objets);
+  const premiere = Object.keys(sauvegarde.prises).length === 0 && objets.find(o => o.id === CONFIG.PREMIERE_PRISE);
+  if (premiere || (objets.length && Math.random() < CONFIG.CHANCE_OBJET_SPECIAL)) {
+    const o = premiere || choisir(objets);
     jeu.prise = { def: o, special: true, sprite: SPR.objets[o.id] };
     bouffee(jeu.bouchon.x, jeu.bouchon.y, 10, '#ffe9a8');
   } else jeu.prise = { def: n.def, special: false, sprite: spr, cle: n.cle };
