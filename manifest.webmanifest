@@ -1,8 +1,8 @@
 {
-  "name": "Pêcher dans les nuages",
-  "short_name": "Nuages",
-  "description": "Un petit jeu de pêche cosy, dans un océan de nuages, depuis un balcon de Hanoï.",
-  "lang": "fr",
+  "name": "Fishing in the Clouds",
+  "short_name": "Clouds",
+  "description": "A cosy little fishing game: catch clouds from a balcony in Hanoi.",
+  "lang": "en",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

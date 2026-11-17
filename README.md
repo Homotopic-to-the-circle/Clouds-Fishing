@@ -1,6 +1,7 @@
-# Pêcher dans les nuages
+# Fishing in the Clouds (Pêcher dans les nuages)
 
-Un petit jeu de pêche cosy en pixel art : on pêche des nuages depuis un balcon de Hanoï.
+Un petit jeu de pêche cosy en pixel art façon Minecraft : elle pêche des nuages depuis le balcon d'un immeuble de Hanoï vu de profil.
+Textes du jeu en anglais, commentaires du code en français.
 Pensé pour le Samsung Galaxy Z Flip 7 à moitié plié (mode Flex) : le ciel en haut, le balcon en bas.
 
 ## Jouer
@@ -16,9 +17,9 @@ Pensé pour le Samsung Galaxy Z Flip 7 à moitié plié (mode Flex) : le ciel en
 Si `index.html` est ouvert seul (sans les autres fichiers), il génère lui-même un manifest et ses icônes.
 
 ## Comment on joue
-- **Pêcher** sort la canne (interrupteur ON/OFF) : le bouchon s'envole dans les nuages.
+- **Fish** sort la canne (interrupteur ON/OFF) : le bouchon s'envole dans les nuages.
 - Un nuage qui passe près du bouchon peut s'y intéresser et **grignoter** (petites secousses) : ne pas taper tout de suite.
-- Quand **ça mord** (« ! », vibration, bouton « FERRER ! »), taper l'écran ou le bouton.
+- Quand **ça mord** (« ! », vibration, bouton « REEL IN! »), taper l'écran ou le bouton.
 - Le **carnet** (en bas à gauche) liste toutes les prises ; la progression est sauvegardée sur le téléphone.
 - Le ciel suit l'heure réelle ; certains nuages ne passent qu'à certaines heures.
 
@@ -28,7 +29,7 @@ Tout ce qui est éditable est en haut du `<script>` de `index.html`, section **�
 - `RARETES` : poids d'apparition, durée de la fenêtre de ferrage.
 - `NUAGES` : noms, descriptions, heures de passage, indices du carnet.
 - `OBJETS_SPECIAUX` : souvenirs du voyage. **Les emplacements `souvenir1` à `souvenir5` sont à remplir** (nom + description,
-  sprite au choix parmi `pho, eggcoffee, poisson, chat, rocher, carte, lanterne, tabouret, livre`). `actif: false` retire un objet.
+  en anglais, sprite au choix parmi `pho, eggcoffee, poisson, chat, rocher, carte, lanterne, tabouret, livre`). `actif: false` retire un objet.
 - `TEXTES`, `PALETTE_HORAIRE` : messages et couleurs du ciel heure par heure.
 
 Après une modification publiée sur GitHub Pages, incrémenter `VERSION` dans `sw.js` pour que le téléphone récupère la nouvelle version.

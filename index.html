@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Pêcher dans les nuages</title>
-<meta name="description" content="Un petit jeu de pêche cosy, dans un océan de nuages, depuis un balcon de Hanoï.">
+<title>Fishing in the Clouds</title>
+<meta name="description" content="A cosy little fishing game: catch clouds from a balcony in Hanoi.">
 <meta name="theme-color" content="#5fa8e8">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Nuages">
+<meta name="apple-mobile-web-app-title" content="Clouds">
 <!-- Manifest PWA : le fichier manifest.webmanifest est utilisé s'il existe (GitHub Pages).
      Si la page est ouverte seule, le script le remplace par un manifest généré à la volée. -->
 <link rel="manifest" id="lien-manifest" href="manifest.webmanifest">
@@ -36,20 +36,15 @@
     image-rendering: pixelated; image-rendering: crisp-edges;
   }
   /* ---------- Boutons « pixel » (bordure crénelée par box-shadow) ---------- */
+  /* Boutons façon Minecraft : pierre grise biseautée, texte blanc avec ombre */
   .btn-pixel {
+    --fond: #8e8e8e; --clair: #c6c6c6; --sombre: #555555;
     font: 700 15px/1 var(--police-pixel);
-    color: var(--encre); background: var(--bois);
-    border: 0; margin: 4px; padding: 11px 14px; cursor: pointer;
-    letter-spacing: .5px;
-    box-shadow:
-      0 4px 0 0 var(--encre), 0 -4px 0 0 var(--encre),
-      4px 0 0 0 var(--encre), -4px 0 0 0 var(--encre),
-      inset 0 -5px 0 0 var(--bois-ombre), inset 0 3px 0 0 #fff4d8;
+    color: #fff; text-shadow: 2px 2px 0 #3a3a3a; background: var(--fond);
+    border: 0; margin: 4px; padding: 11px 14px; cursor: pointer; letter-spacing: .5px;
+    box-shadow: 0 0 0 3px #1c1c1c, inset 3px 3px 0 0 var(--clair), inset -3px -4px 0 0 var(--sombre);
   }
-  .btn-pixel:active { transform: translateY(2px); box-shadow:
-      0 4px 0 0 var(--encre), 0 -4px 0 0 var(--encre),
-      4px 0 0 0 var(--encre), -4px 0 0 0 var(--encre),
-      inset 0 5px 0 0 var(--bois-ombre); }
+  .btn-pixel:active { box-shadow: 0 0 0 3px #1c1c1c, inset 3px 3px 0 0 var(--sombre), inset -3px -3px 0 0 var(--clair); }
 
   #bouton-peche {
     position: fixed; left: 50%; transform: translateX(-50%);
@@ -62,7 +57,7 @@
   /* Interrupteur ON/OFF en pixels */
   .interrupteur {
     position: relative; width: 36px; height: 18px; background: #6d6276;
-    box-shadow: 0 2px 0 0 var(--encre), 0 -2px 0 0 var(--encre), 2px 0 0 0 var(--encre), -2px 0 0 0 var(--encre);
+    box-shadow: 0 0 0 2px #1c1c1c;
     flex: none;
   }
   .interrupteur::after {
@@ -71,8 +66,8 @@
   }
   .on .interrupteur { background: #5fae63; }
   .on .interrupteur::after { left: 20px; }
-  #bouton-peche.on { background: #cfe8c0; --bois-ombre: #9cc58a; }
-  #bouton-peche.ferrer { background: #ffb08a; --bois-ombre: #e07a5a; animation: pulse .32s steps(2) infinite; }
+  #bouton-peche.on { --fond: #5f9a43; --clair: #8fca6c; --sombre: #3a6628; }
+  #bouton-peche.ferrer { --fond: #c9472f; --clair: #f27c5c; --sombre: #7a2818; animation: pulse .32s steps(2) infinite; }
   @keyframes pulse { 50% { filter: brightness(1.12); } }
 
   #bouton-carnet {
@@ -154,20 +149,20 @@
 <body>
 <canvas id="scene"></canvas>
 
-<button id="bouton-carnet" class="btn-pixel" aria-label="Ouvrir le carnet"><canvas id="icone-carnet" width="16" height="12"></canvas><span id="compteur-carnet">0/0</span></button>
-<button id="bouton-peche" class="btn-pixel" aria-pressed="false"><span class="interrupteur"></span><span id="libelle-peche">Pêcher</span></button>
+<button id="bouton-carnet" class="btn-pixel" aria-label="Open the logbook"><canvas id="icone-carnet" width="16" height="12"></canvas><span id="compteur-carnet">0/0</span></button>
+<button id="bouton-peche" class="btn-pixel" aria-pressed="false"><span class="interrupteur"></span><span id="libelle-peche">Fish</span></button>
 <div id="bulle" role="status" aria-live="polite"></div>
 
 <!-- Carte de prise -->
 <div id="voile-carte" class="voile">
   <div class="papier carte" role="dialog" aria-modal="true">
-    <span id="carte-nouveau" class="nouveau">✶ NOUVELLE PRISE ✶</span>
-    <span id="carte-rarete" class="etiquette-rarete">Commun</span>
+    <span id="carte-nouveau" class="nouveau">✶ NEW CATCH ✶</span>
+    <span id="carte-rarete" class="etiquette-rarete">Common</span>
     <div id="carte-cadre" class="cadre-sprite"><canvas id="carte-sprite"></canvas></div>
-    <h2 id="carte-nom">Nom</h2>
+    <h2 id="carte-nom">Name</h2>
     <p id="carte-desc" class="desc"></p>
     <p id="carte-compte" class="compte"></p>
-    <button id="carte-garder" class="btn-pixel">Garder dans le carnet</button>
+    <button id="carte-garder" class="btn-pixel">Keep in logbook</button>
   </div>
 </div>
 
@@ -175,8 +170,8 @@
 <div id="voile-carnet" class="voile">
   <div class="papier carnet" role="dialog" aria-modal="true">
     <header>
-      <h2>Carnet de nuages</h2>
-      <button id="carnet-fermer" class="btn-pixel" aria-label="Fermer">Fermer</button>
+      <h2>Cloud Logbook</h2>
+      <button id="carnet-fermer" class="btn-pixel" aria-label="Close">Close</button>
       <div class="progression" id="carnet-progression"></div>
       <div class="barre"><div id="carnet-barre" style="width:0%"></div></div>
     </header>
@@ -184,13 +179,14 @@
   </div>
 </div>
 
-<div id="paysage">Tourne ton téléphone en portrait :<br>les nuages t'attendent en haut.</div>
+<div id="paysage">Turn your phone upright:<br>the clouds are waiting up top.</div>
 
 <script>
 'use strict';
 /* =====================================================================
-   PÊCHER DANS LES NUAGES
+   FISHING IN THE CLOUDS (Pêcher dans les nuages)
    Un petit jeu de pêche cosy : on pêche des nuages depuis un balcon de Hanoï.
+   Textes du jeu en anglais ; commentaires du code en français.
 
    Organisation du fichier :
      1. DONNÉES ÉDITABLES  (réglages, raretés, nuages, objets spéciaux, textes, couleurs)
@@ -214,15 +210,15 @@
 const CONFIG = {
   CHANCE_OBJET_SPECIAL: 0.05,  // probabilité qu'une prise soit un objet spécial au lieu d'un nuage (0.05 = 5 %)
   ATTENTE_MIN_S: 1.6,          // délai minimum après le lancer avant qu'un nuage puisse s'intéresser au bouchon
-  ATTENTE_MAX_S: 13,           // au-delà, un nuage est envoyé exprès vers le bouchon (pour ne jamais attendre trop)
-  CURIOSITE: 0.6,              // probabilité qu'un nuage qui passe près du bouchon s'y intéresse
-  RAYON_X: 22, RAYON_Y: 16,    // distance (en pixels logiques) à laquelle un nuage « remarque » le bouchon
+  ATTENTE_MAX_S: 10,           // au-delà, un nuage est envoyé exprès vers le bouchon (pour ne jamais attendre trop)
+  CURIOSITE: 0.7,              // probabilité qu'un nuage qui passe près du bouchon s'y intéresse
+  RAYON_X: 16, RAYON_Y: 12,    // distance (en pixels logiques) à laquelle un nuage « remarque » le bouchon
   GRIGNOTE_MIN_S: 1.0,         // durée de la phase « ça grignote » (taper ici = trop tôt)
   GRIGNOTE_MAX_S: 2.6,
   APPARITION_MIN_S: 1.8,       // intervalle entre deux nuages pêchables qui entrent dans le ciel
   APPARITION_MAX_S: 3.6,
-  MAX_NUAGES: 8,               // nombre max de nuages pêchables à l'écran
-  LARGEUR_LOGIQUE: 150,        // largeur du monde en « gros pixels » (plus petit = pixels plus gros)
+  MAX_NUAGES: 6,               // nombre max de nuages pêchables à l'écran
+  LARGEUR_LOGIQUE: 100,        // largeur du monde en « gros pixels » (plus petit = pixels plus gros)
   VIBRATION: true,             // vibration quand ça mord (si le téléphone le permet)
 };
 
@@ -233,14 +229,14 @@ const CONFIG = {
 // scintille : nombre moyen d'étincelles par seconde autour du nuage
 // ondule    : le nuage flotte de haut en bas ; halo : couleur du contour lumineux
 const RARETES = {
-  commun:     { nom: 'Commun',      poids: 60, couleur: '#8a9bb0', fenetreMs: 1000, lenteur: 1.0, scintille: 0 },
-  peuCommun:  { nom: 'Peu commun',  poids: 25, couleur: '#5f9e63', fenetreMs: 950,  lenteur: 0.95, scintille: 0 },
+  commun:     { nom: 'Common',      poids: 60, couleur: '#8a9bb0', fenetreMs: 1000, lenteur: 1.0, scintille: 0 },
+  peuCommun:  { nom: 'Uncommon',    poids: 25, couleur: '#5f9e63', fenetreMs: 950,  lenteur: 0.95, scintille: 0 },
   rare:       { nom: 'Rare',        poids: 10, couleur: '#4a86c8', fenetreMs: 850,  lenteur: 0.8, scintille: 1.5, etincelle: '#ffffff' },
-  epique:     { nom: 'Épique',      poids: 4,  couleur: '#9a62c8', fenetreMs: 750,  lenteur: 0.7, scintille: 3, etincelle: '#f3e0ff', ondule: true, halo: '#e8d4ff' },
-  legendaire: { nom: 'Légendaire',  poids: 1,  couleur: '#d99a1e', fenetreMs: 700,  lenteur: 0.6, scintille: 5, etincelle: '#fff1a8', ondule: true, halo: '#ffe58a' },
+  epique:     { nom: 'Epic',        poids: 4,  couleur: '#9a62c8', fenetreMs: 750,  lenteur: 0.7, scintille: 3, etincelle: '#f3e0ff', ondule: true, halo: '#e8d4ff' },
+  legendaire: { nom: 'Legendary',   poids: 1,  couleur: '#d99a1e', fenetreMs: 700,  lenteur: 0.6, scintille: 5, etincelle: '#fff1a8', ondule: true, halo: '#ffe58a' },
 };
 const ORDRE_RARETES = ['commun', 'peuCommun', 'rare', 'epique', 'legendaire'];
-const RARETE_OBJET = { nom: 'Objet spécial', couleur: '#c95a78' };
+const RARETE_OBJET = { nom: 'Special item', couleur: '#c95a78' };
 
 // ---- Les nuages (les « poissons » du jeu) ----
 // heures : [début, fin] en heures locales (ex. [20.5, 5] = de 20h30 à 5h, passe minuit). Absent = toute la journée.
@@ -249,49 +245,49 @@ const RARETE_OBJET = { nom: 'Objet spécial', couleur: '#c95a78' };
 const NUAGES = [
   // --- Communs ---
   { id: 'cumulus', nom: 'Cumulus', rarete: 'commun', forme: 'cumulus',
-    description: "Le nuage que tout le monde dessine quand il a six ans. Il le sait, et il en est discrètement fier." },
+    description: "The cloud everyone draws when they're six. It knows this, and is quietly proud of it." },
   { id: 'stratus', nom: 'Stratus', rarete: 'commun', forme: 'stratus',
-    description: "Il s'étire comme un dimanche sans projet. Il ne va nulle part, et il y va très lentement." },
-  { id: 'rond', nom: 'Petit nuage tout rond', rarete: 'commun', forme: 'rond',
-    description: "Il a perdu son troupeau quelque part au-dessus du fleuve Rouge. Il ne s'inquiète pas : il en trouvera un autre au prochain coin de ciel." },
+    description: "It stretches out like a Sunday with no plans. It's going nowhere, and taking its time getting there." },
+  { id: 'rond', nom: 'Little round cloud', rarete: 'commun', forme: 'rond',
+    description: "It lost its flock somewhere over the Red River. It isn't worried: there's always another one around the next corner of sky." },
 
   // --- Peu communs ---
   { id: 'cirrus', nom: 'Cirrus', rarete: 'peuCommun', forme: 'cirrus',
-    description: "Des cheveux d'ange peignés par le vent d'altitude. On dit qu'ils annoncent un changement de temps. Eux n'ont jamais rien confirmé." },
+    description: "Angel hair, combed by the high-altitude wind. They say it means the weather is about to change. It has never confirmed this." },
   { id: 'altocumulus', nom: 'Altocumulus', rarete: 'peuCommun', forme: 'altocumulus',
-    description: "Un ciel pommelé, en écailles. Pour une fois, c'est le nuage qui ressemble à un poisson, et pas l'inverse." },
-  { id: 'mouton', nom: 'Nuage-mouton', rarete: 'peuCommun', forme: 'mouton',
-    description: "Il broute le bleu en silence. Ne le compte pas trop longtemps : tu risquerais de t'endormir sur le balcon, et le café refroidirait." },
+    description: "A dappled sky, all scales. For once it's the cloud that looks like a fish, and not the other way round." },
+  { id: 'mouton', nom: 'Sheep cloud', rarete: 'peuCommun', forme: 'mouton',
+    description: "It grazes on the blue in silence. Don't count it for too long: you'll fall asleep on the balcony and your coffee will go cold." },
 
   // --- Rares ---
-  { id: 'lenticulaire', nom: 'Nuage lenticulaire', rarete: 'rare', forme: 'lenticulaire',
-    description: "Une pile d'assiettes posée sur le vent, immobile. Les gens le prennent pour une soucoupe volante. Lui se prend pour une lentille de myope." },
+  { id: 'lenticulaire', nom: 'Lenticular cloud', rarete: 'rare', forme: 'lenticulaire',
+    description: "A stack of plates balanced on the wind, perfectly still. People mistake it for a flying saucer. It thinks of itself as a contact lens." },
   { id: 'mammatus', nom: 'Mammatus', rarete: 'rare', forme: 'mammatus',
-    description: "Des poches suspendues sous l'orage, comme un plafond qui aurait trop bu de thé glacé. Étrange, rare, et sans doute très doux au toucher." },
-  { id: 'coucher', nom: 'Nuage du soir', rarete: 'rare', forme: 'coucher', heures: [17, 20],
-    indice: "Ne passe qu'à l'heure où le ciel rosit.",
-    description: "Il ne vit qu'une demi-heure par jour, entièrement rose. Il trouve que c'est largement suffisant pour une vie réussie." },
+    description: "Pouches hanging under a storm, like a ceiling that drank too much iced tea. Strange, rare, and probably very soft." },
+  { id: 'coucher', nom: 'Evening cloud', rarete: 'rare', forme: 'coucher', heures: [17, 20],
+    indice: "Only drifts by when the sky turns pink.",
+    description: "It only lives for half an hour a day, entirely pink. It considers this plenty for a life well lived." },
 
   // --- Épiques ---
-  { id: 'iridescent', nom: 'Nuage iridescent', rarete: 'epique', forme: 'iridescent', heures: [8, 17],
-    indice: "Cherche-le en plein jour, quand le soleil est haut.",
-    description: "Ses gouttelettes plient la lumière en pastel. Un arc-en-ciel qui n'a pas eu la patience d'attendre la pluie." },
-  { id: 'kelvin', nom: 'Vagues de Kelvin-Helmholtz', rarete: 'epique', forme: 'kelvin',
-    description: "Quand deux vents glissent l'un sur l'autre, le ciel se met à faire des rouleaux. Parfois, la physique fait du surf." },
-  { id: 'mousson', nom: 'Nuage de mousson sur Hanoï', rarete: 'epique', forme: 'mousson', heures: [13, 19.5],
-    indice: "Arrive les après-midi lourds, sans prévenir.",
-    description: "Il arrive au-dessus du lac Hoàn Kiếm à cinq heures pile, vide son sac en dix minutes, puis repart comme si de rien n'était. Les scooters ont déjà sorti leurs ponchos." },
+  { id: 'iridescent', nom: 'Iridescent cloud', rarete: 'epique', forme: 'iridescent', heures: [8, 17],
+    indice: "Look for it in broad daylight, when the sun is high.",
+    description: "Its droplets fold the light into pastels. A rainbow that couldn't wait for the rain." },
+  { id: 'kelvin', nom: 'Kelvin-Helmholtz waves', rarete: 'epique', forme: 'kelvin',
+    description: "When two winds slide over each other, the sky starts rolling into waves. Sometimes physics goes surfing." },
+  { id: 'mousson', nom: 'Monsoon cloud over Hanoi', rarete: 'epique', forme: 'mousson', heures: [13, 19.5],
+    indice: "Shows up on heavy afternoons, without warning.",
+    description: "It arrives over Hoàn Kiếm Lake at five sharp, empties its pockets in ten minutes, and leaves as if nothing happened. The scooters already have their ponchos on." },
 
   // --- Légendaires ---
-  { id: 'noctulescent', nom: 'Nuage noctulescent', rarete: 'legendaire', forme: 'noctulescent', heures: [20.5, 5],
-    indice: "On ne le voit que la nuit, tout là-haut.",
-    description: "Le plus haut de tous les nuages, à la lisière de l'espace. Il brille encore quand tout le reste dort, comme une pensée qu'on n'arrive pas à éteindre." },
-  { id: 'bibliotheque', nom: 'Le Nuage-Bibliothèque', rarete: 'legendaire', forme: 'bibliotheque',
-    indice: "Un nuage qui n'existe dans aucun manuel.",
-    description: "Il contient tous les livres qu'on a commencés sans jamais les finir. Il en pleut parfois une page, et c'est toujours la bonne." },
-  { id: 'baleine', nom: 'La Baleine aux deux lunes', rarete: 'legendaire', forme: 'baleine', heures: [22, 3.5],
-    indice: "Ne nage que tard dans la nuit, quand le monde se dédouble.",
-    description: "Elle ne passe que dans les ciels où il y a deux lunes. Si tu l'as pêchée, regarde bien autour de toi : tu n'es peut-être plus tout à fait dans le même monde qu'hier." },
+  { id: 'noctulescent', nom: 'Noctilucent cloud', rarete: 'legendaire', forme: 'noctulescent', heures: [20.5, 5],
+    indice: "Only seen at night, way up high.",
+    description: "The highest of all clouds, at the edge of space. It keeps glowing when everything else is asleep, like a thought you can't switch off." },
+  { id: 'bibliotheque', nom: 'The Library Cloud', rarete: 'legendaire', forme: 'bibliotheque',
+    indice: "A cloud you won't find in any textbook.",
+    description: "It holds every book you ever started and never finished. Sometimes a page rains down, and it's always the right one." },
+  { id: 'baleine', nom: 'The Whale of Two Moons', rarete: 'legendaire', forme: 'baleine', heures: [22, 3.5],
+    indice: "Only swims late at night, when the world splits in two.",
+    description: "It only swims through skies that have two moons. If you caught it, take a careful look around: you may not be in quite the same world as yesterday." },
 ];
 
 // ---- Objets spéciaux (souvenirs du voyage, clins d'œil littéraires) ----
@@ -299,47 +295,52 @@ const NUAGES = [
 // actif  : mettre false pour retirer un objet du jeu et du carnet
 // retombe: true = l'objet retombe une fois pendant la remontée (Sisyphe)
 const OBJETS_SPECIAUX = [
-  { id: 'pho', nom: 'Bol de phở au tendon', sprite: 'pho', actif: true,
-    description: "Fumant, translucide, parfait. Le tendon fond comme un souvenir de voyage. Personne ne sait comment il est arrivé là-haut, et on ne pose pas de questions à un bon phở." },
+  { id: 'pho', nom: 'Bowl of tendon phở', sprite: 'pho', actif: true,
+    description: "Steaming, translucent, perfect. The tendon melts like a travel memory. Nobody knows how it got up there, and you don't ask questions of a good phở." },
   { id: 'eggcoffee', nom: 'Egg coffee', sprite: 'eggcoffee', actif: true,
-    description: "Une mousse de jaune d'œuf battu sur un café très noir, servie dans un bol d'eau chaude pour qu'elle reste tiède. Le nuage le plus dense du ciel, et de loin le plus sucré." },
-  { id: 'poisson', nom: 'Poisson tombé du ciel', sprite: 'poisson', actif: true,
-    description: "Ce jour-là, il pleuvait des poissons, sans raison particulière. Celui-ci a simplement décidé de remonter. Il ne t'expliquera rien, et c'est peut-être mieux comme ça." },
-  { id: 'chat', nom: 'Chat qui parle', sprite: 'chat', actif: true,
-    description: "Il t'a regardée longuement, puis il a dit : « Tu pêches au mauvais endroit, mais au bon moment. » Ensuite il a réclamé une sardine. Un chat qui parle reste un chat." },
-  { id: 'rocher', nom: 'Rocher qui retombe', sprite: 'rocher', actif: true, retombe: true,
-    description: "Tu l'as remonté. Il est retombé. Tu l'as remonté encore. En le regardant, on ne sait pas trop pourquoi, on se sent d'assez bonne humeur." },
+    description: "Whipped egg yolk on very black coffee, served in a bowl of hot water to keep it warm. The densest cloud in the sky, and by far the sweetest." },
+  { id: 'poisson', nom: 'Fish that fell from the sky', sprite: 'poisson', actif: true,
+    description: "That day it was raining fish, for no particular reason. This one simply decided to go back up. It won't explain anything, and maybe that's for the best." },
+  { id: 'chat', nom: 'Talking cat', sprite: 'chat', actif: true,
+    description: "It looked at you for a long time, then said: “You're fishing in the wrong place, but at the right time.” Then it asked for a sardine. A talking cat is still a cat." },
+  { id: 'rocher', nom: 'The rock that rolls back', sprite: 'rocher', actif: true, retombe: true,
+    description: "You hauled it up. It fell back down. You hauled it up again. Watching it, for some reason, you feel in rather good spirits." },
 
-  // --- EMPLACEMENTS À REMPLIR : remplace nom et description par tes propres souvenirs ---
-  { id: 'souvenir1', nom: 'Souvenir n°1', sprite: 'carte', actif: true,
-    description: "(À écrire : un souvenir de Hô Chi Minh-Ville…)" },
-  { id: 'souvenir2', nom: 'Souvenir n°2', sprite: 'lanterne', actif: true,
-    description: "(À écrire : un souvenir de Hanoï…)" },
-  { id: 'souvenir3', nom: 'Souvenir n°3', sprite: 'tabouret', actif: true,
-    description: "(À écrire : une soirée sur les petits tabourets en plastique…)" },
-  { id: 'souvenir4', nom: 'Souvenir n°4', sprite: 'livre', actif: true,
-    description: "(À écrire : un livre, une phrase, une conversation…)" },
-  { id: 'souvenir5', nom: 'Souvenir n°5', sprite: 'carte', actif: true,
-    description: "(À écrire : ce que tu veux qu'elle trouve tout au fond du ciel.)" },
+  // --- EMPLACEMENTS À REMPLIR : remplace nom et description par tes propres souvenirs (en anglais) ---
+  { id: 'souvenir1', nom: 'Memory #1', sprite: 'carte', actif: true,
+    description: "(To write: a memory from Ho Chi Minh City…)" },
+  { id: 'souvenir2', nom: 'Memory #2', sprite: 'lanterne', actif: true,
+    description: "(To write: a memory from Hanoi…)" },
+  { id: 'souvenir3', nom: 'Memory #3', sprite: 'tabouret', actif: true,
+    description: "(To write: an evening on the little plastic stools…)" },
+  { id: 'souvenir4', nom: 'Memory #4', sprite: 'livre', actif: true,
+    description: "(To write: a book, a sentence, a conversation…)" },
+  { id: 'souvenir5', nom: 'Memory #5', sprite: 'carte', actif: true,
+    description: "(To write: whatever you want her to find at the very bottom of the sky.)" },
 ];
 
 // ---- Textes de l'interface ----
 const TEXTES = {
   tropTot: [
-    "Trop tôt… le nuage s'est éparpillé en riant.",
-    "Doucement : il ne faisait que goûter.",
-    "Il a eu peur du bruit. Il reviendra.",
+    "Too early… the cloud scattered, laughing.",
+    "Easy: it was only having a taste.",
+    "It got startled. It'll be back.",
   ],
   tropTard: [
-    "Trop tard… il a filé avec le vent.",
-    "Il est parti rêver un peu plus loin.",
-    "Raté, mais le ciel est encore plein.",
+    "Too late… it drifted off with the wind.",
+    "It went off to dream a little further away.",
+    "Missed, but the sky is still full.",
   ],
-  rocher: "…et il retombe. Tu le remontes encore.",
-  premiereVisite: "Appuie sur « Pêcher », puis tape l'écran quand le bouchon s'agite.",
-  ferrer: 'FERRER !',
-  pecher: 'Pêcher',
-  enPeche: 'En pêche',
+  rocher: "…and it rolls back down. You haul it up again.",
+  premiereVisite: "Tap “Fish”, then tap the screen when the bobber starts to shake.",
+  ferrer: 'REEL IN!',
+  pecher: 'Fish',
+  enPeche: 'Fishing',
+  nouvelle: 'First catch!',
+  compte: (n) => `Caught ${n} times`,
+  progression: (f, t) => `${f} / ${t} catches discovered — ${Math.round(100 * f / t)} %`,
+  pasEncore: 'Not caught yet.',
+  metaConnu: (r, n) => `${r} · caught ${n} times`,
 };
 
 // ---- Couleurs du ciel selon l'heure (images clés, interpolées entre elles) ----
@@ -604,6 +605,50 @@ const SPRITES_ASCII = {
     '.hhhhhhhh.'] },
 };
 
+// ---- Elle : petit personnage de profil (12×23), trois poses ----
+// H/h cheveux bruns, c pointes caramel, s/S peau, e œil, m lèvres, E créole argentée,
+// w/W blouse blanche, k/K empiècement en crochet, b sandales
+const PERSO = {
+  pal: { H: '#2e211b', h: '#4a3326', c: '#8a5a3a', s: '#e9b995', S: '#d29b78', e: '#2a1d18', m: '#c27466', E: '#d4d7dd',
+         w: '#f6f3ec', W: '#dcd6ca', k: '#ece2c8', K: '#c9b48c', b: '#7a5236' },
+  // canne en main (mains vers l'avant)
+  peche: [
+    '...HHHHH....', '..HHHHHHHH..', '.HHHhhhHHHH.', '.HHhHHHHsHH.', '.HHhHHssess.', '.HHhHEssssS.',
+    '.HHhHHsssm..', '.HhHHHSss...', '.HhHcHSs....', '.chcc..ss...', '..ccwwkKkw..', '..cwkKkKkkw.',
+    '...wwkKkWWss', '...wwwwwWWs.', '...wwwwwww..', '...wWwwwWw..', '..wwwWwwwWw.', '..wwWwwwwWw.',
+    '..wwwwwwwww.', '....ss..ss..', '....ss..ss..', '....ss..ss..', '...bbb..bbb.'],
+  // canne rangée (bras le long du corps)
+  repos: [
+    '...HHHHH....', '..HHHHHHHH..', '.HHHhhhHHHH.', '.HHhHHHHsHH.', '.HHhHHssess.', '.HHhHEssssS.',
+    '.HHhHHsssm..', '.HhHHHSss...', '.HhHcHSs....', '.chcc..ss...', '..ccwwkKkw..', '..cwkKkKkkw.',
+    '...wwkKkWw..', '...wwwwwWw..', '...wwwwwSs..', '...wWwwwWw..', '..wwwWwwwWw.', '..wwWwwwwWw.',
+    '..wwwwwwwww.', '....ss..ss..', '....ss..ss..', '....ss..ss..', '...bbb..bbb.'],
+  // on ferre ! (bras levés)
+  ferre: [
+    '...HHHHH....', '..HHHHHHHH..', '.HHHhhhHHHH.', '.HHhHHHHsHH.', '.HHhHHssess.', '.HHhHEssssS.',
+    '.HHhHHsssm..', '.HhHHHSss...', '.HhHcHSs....', '.chcc..ss.ss', '..ccwwkKkWWs', '..cwkKkKkkW.',
+    '...wwkKkww..', '...wwwwwWw..', '...wwwwwww..', '...wWwwwWw..', '..wwwWwwwWw.', '..wwWwwwwWw.',
+    '..wwwwwwwww.', '....ss..ss..', '....ss..ss..', '....ss..ss..', '...bbb..bbb.'],
+};
+const MAINS = { peche: [11, 12], ferre: [11, 9] };   // position des mains dans le sprite (départ de la canne)
+
+Object.assign(SPRITES_ASCII, {
+  miniTabouret: { pal: { R: '#f26b5b', r: '#d8403a', d: '#a52b2b' }, l: [
+    'RRRRRRR', 'ddddddd', 'dr.r.rd', 'd.....d', 'd.....d'] },
+  miniTasse: { pal: { o: '#5a3a2a', C: '#f2cf72', w: '#fbf6ee', h: '#a9b8c6' }, l: [
+    'oCCo.', 'owwoo', 'owwo.', 'hhhhh'] },
+  scooter: { pal: { r: '#4a8fc4', R: '#7ab4e0', d: '#3a3a40', o: '#222228', G: '#8a8a92', K: '#b0b4bb', s: '#5a3a2a' }, l: [
+    '.K.............',
+    '..K............',
+    '..Kr.....sss...',
+    '.rRrRRRRRssss..',
+    '.rrrrrrrrrrrrr.',
+    '..dddd...dddd..',
+    '.oGGGo...oGGGo.',
+    '.oGoGo...oGoGo.',
+    '..ooo.....ooo..'] },
+});
+
 // Construit un sprite de nuage à partir d'une forme
 function genererNuage(forme) {
   const w = forme.l, h = forme.h, pal = PALS[forme.pal];
@@ -625,7 +670,7 @@ function genererNuage(forme) {
     if (m[i]) {
       if (!dans(x, y - 1)) col[i] = pal.hi;
       else if (!dans(x, y + 1) || !dans(x, y + 2)) col[i] = pal.ombre;
-      else col[i] = pal.base;
+      else col[i] = (((x * 7 + y * 13) ^ (x * y)) % 9 === 0) ? melange(pal.base, pal.ombre, 0.4) : pal.base; // grain façon bloc
     } else if (pal.contour && (dans(x - 1, y) || dans(x + 1, y) || dans(x, y - 1) || dans(x, y + 1))) col[i] = pal.contour;
   }
   // Décorations
@@ -657,6 +702,12 @@ function construireSprites() {
   for (const k in SPRITES_ASCII) SPR.ascii[k] = spriteAscii(SPRITES_ASCII[k]);
   for (const o of OBJETS_SPECIAUX) SPR.objets[o.id] = SPR.ascii[o.sprite] || SPR.ascii.carte;
   for (const k of ['loin1', 'loin2', 'loin3', 'brume1', 'brume2']) SPR.decor[k] = genererNuage(FORMES[k]);
+  SPR.perso = {};
+  for (const pose of ['peche', 'repos', 'ferre']) {
+    SPR.perso[pose] = spriteAscii({ pal: PERSO.pal, l: PERSO[pose] });
+    const clin = PERSO[pose].map((l, y) => y === 4 ? l.replace('e', 's') : l);   // paupières fermées
+    SPR.perso[pose + 'B'] = spriteAscii({ pal: PERSO.pal, l: clin });
+  }
 }
 
 
@@ -699,7 +750,7 @@ function redimensionner() {
 
   calculerGeometrie();
   construireEtoiles();
-  balconBrut = null; cleBalcon = '';  // forcer la reconstruction des calques
+  fondBrut = null; cleBalcon = '';  // forcer la reconstruction des calques
   majPalette(true);
   document.getElementById('bulle').style.top = (SPLIT_CSS + 10) + 'px';
 }
@@ -707,21 +758,26 @@ function redimensionner() {
 function calculerGeometrie() {
   const BH = H - SPLIT;
   G.BH = BH;
-  G.rampeHaut = SPLIT + Math.round(BH * 0.34);
-  G.rampeBas = SPLIT + Math.round(BH * 0.6);
-  G.solY = G.rampeBas + 4;
-  G.pointe = { x: Math.round(W * 0.6), y: SPLIT + Math.max(6, Math.round(BH * 0.1)) };  // bout de la canne
-  G.baseCanne = { x: Math.round(W * 0.27), y: G.solY + 10 };
-  G.tabouret = { x: W - 28, y: G.solY + 4 };
-  G.tasse = { x: G.tabouret.x + 2, y: G.tabouret.y - 7 };
-  G.pot = { x: 3, y: G.solY + 3 };
-  G.fils = [
-    [SPLIT + 9, SPLIT + 15, 6], [SPLIT + 13, SPLIT + 21, 8], [SPLIT + 19, SPLIT + 14, 5], [SPLIT + 24, SPLIT + 29, 7],
+  G.facade = Math.round(W * 0.46);                          // bord droit de l'immeuble (les balcons dépassent à droite)
+  G.rue = H - 24;                                           // niveau du trottoir
+  G.toit = SPLIT + Math.max(8, Math.round(BH * 0.14));      // toit-terrasse
+  G.balcon = G.toit + 28;                                   // sol du balcon où elle pêche (dernier étage)
+  G.etage1 = G.balcon + Math.round((G.rue - G.balcon) / 2); // balcon du premier étage
+  G.perso = { x: G.facade + 3, y: G.balcon - 23 };
+  G.tabouret = { x: G.facade + 15, y: G.balcon - 5 };
+  G.tasse = { x: G.tabouret.x + 1, y: G.tabouret.y - 4 };
+  G.canneRangee = { base: { x: G.facade + 22, y: G.balcon - 1 }, pointe: { x: G.facade + 25, y: G.balcon - 27 } };
+  G.poteau = { x: W - 6, haut: G.toit - 4 };
+  G.fils = [                                                // [x0, y0, x1, y1, flèche]
+    [G.facade, G.toit - 6, G.poteau.x, G.poteau.haut + 2, 4],
+    [G.facade, G.toit - 3, G.poteau.x, G.poteau.haut + 5, 6],
+    [G.poteau.x, G.poteau.haut + 3, W + 2, G.poteau.haut + 8, 2],
   ];
-  const lx = Math.round(W * 0.8);
-  G.lanterne = { x: lx, y: Math.round(yFil(G.fils[1], lx)) + 1 };
+  const lx = W - 15;
+  G.lanterne = { x: lx, y: Math.round(yFil(G.fils[0], lx)) + 1 };
+  G.pointe = { ...G.canneRangee.pointe }; G.mains = null;
 }
-function yFil(f, x) { const t = (x + 2) / (W + 4); return f[0] + (f[1] - f[0]) * t + f[2] * 4 * t * (1 - t); }
+function yFil(f, x) { const t = clamp((x - f[0]) / (f[2] - f[0]), 0, 1); return f[1] + (f[3] - f[1]) * t + f[4] * 4 * t * (1 - t); }
 
 
 /* =====================================================================
@@ -744,7 +800,7 @@ function paletteA(h) {
   };
 }
 let pal = paletteA(12), heure = 12, cleBalcon = '';
-let calqueCiel = null, balconBrut = null, balconTeint = null;
+let calqueCiel = null, fondBrut = null, avantBrut = null, fondTeint = null, avantTeint = null;
 const cacheTeinte = new Map();
 let fenetres = [];
 
@@ -756,12 +812,16 @@ function majPalette(force) {
   pal = p; cleBalcon = cle;
   cacheTeinte.clear();
   construireCiel();
-  if (!balconBrut) { balconBrut = creerCanvas(W, H); dessinerBalcon(ctx2d(balconBrut)); }
-  balconTeint = teinter(balconBrut, pal.teinteBalcon);
+  if (!fondBrut) {
+    fondBrut = creerCanvas(W, H); avantBrut = creerCanvas(W, H);
+    dessinerImmeuble(ctx2d(fondBrut), ctx2d(avantBrut));
+  }
+  fondTeint = teinter(fondBrut, pal.teinteBalcon);
+  avantTeint = teinter(avantBrut, pal.teinteBalcon);
   // Fenêtres allumées la nuit
   if (pal.nuit > 0.05) {
-    const b = ctx2d(balconTeint); b.globalAlpha = clamp(pal.nuit * 1.1, 0, 1);
-    for (const f of fenetres) if (f.allumee) { rect(b, f.x, f.y, 4, 5, '#ffcf73'); rect(b, f.x, f.y, 4, 1, '#fff0b8'); }
+    const b = ctx2d(fondTeint); b.globalAlpha = clamp(pal.nuit * 1.1, 0, 1);
+    for (const f of fenetres) if (f.allumee) { rect(b, f.x, f.y, f.w, f.h, '#ffcf73'); if (f.h > 2) rect(b, f.x, f.y, f.w, 1, '#fff0b8'); }
     b.globalAlpha = 1;
   }
   document.querySelector('meta[name=theme-color]').setAttribute('content', pal.cielHaut);
@@ -789,84 +849,127 @@ function construireCiel() {
   x.putImageData(img, 0, 0);
 }
 
-// Le balcon de Hanoï, dessiné une fois (en couleurs « plein jour »), puis teinté selon l'heure
-function dessinerBalcon(c) {
-  const r = mulberry32(17), S = SPLIT;
+// Texture « bloc » façon Minecraft : bruit par pixel + joints de briques facultatifs
+function texture(c, x, y, w, h, base, graine, opts = {}) {
+  const r = mulberry32(graine), v = opts.v ?? 0.08;
+  const fonce = melange(base, '#000000', v), clair = melange(base, '#ffffff', v * 0.9);
+  const joint = opts.joint, bw = opts.bw || 8, bh = opts.bh || 4;
+  for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) {
+    const n = r(); let col = n < 0.3 ? fonce : n > 0.82 ? clair : base;
+    if (joint) {
+      const yy = y + j, xx = x + i + (Math.floor(yy / bh) % 2) * (bw >> 1);
+      if (yy % bh === bh - 1 || xx % bw === 0) col = joint;
+    }
+    c.fillStyle = col; c.fillRect(x + i, y + j, 1, 1);
+  }
+}
+// Petite police 3×5 pour l'enseigne
+const LETTRES = { P: ['111', '101', '111', '100', '100'], H: ['101', '101', '111', '101', '101'], O: ['111', '101', '101', '101', '111'] };
+function ecrire(c, txt, x, y, col) {
+  for (const ch of txt) { LETTRES[ch].forEach((l, j) => { for (let i = 0; i < 3; i++) if (l[i] === '1') rect(c, x + i, y + j, 1, 1, col); }); x += 4; }
+}
+function fenetre(c, x, y, w, h, r, volets = true) {
+  rect(c, x - 1, y - 1, w + 2, h + 2, '#5c3a20');
+  texture(c, x, y, w, h, '#9fd0e8', x * 7 + y, { v: 0.05 });
+  rect(c, x + 1, y + 1, 1, 2, '#e8f6ff'); rect(c, x + 2, y + 1, 1, 1, '#e8f6ff');
+  if (volets) { rect(c, x - 3, y - 1, 2, h + 2, '#4f7f5a'); rect(c, x + w + 1, y - 1, 2, h + 2, '#4f7f5a'); }
+  fenetres.push({ x, y, w, h, allumee: r() < 0.6 });
+}
+function gardeCorps(c, x0, x1, ySol, haut) {
+  const fer = '#2b2733';
+  rect(c, x0, ySol - haut, x1 - x0, 2, fer); rect(c, x0, ySol - haut, x1 - x0, 1, '#5a5468');
+  for (let bx = x0 + 1; bx < x1; bx += 3) rect(c, bx, ySol - haut + 2, 1, haut - 2, fer);
+  rect(c, x1 - 1, ySol - haut, 1, haut, fer);
+}
+function dalle(c, x, y, w, graine) {
+  texture(c, x, y, w, 3, '#a9a9a9', graine, { v: 0.1 });
+  rect(c, x, y, w, 1, '#c8c8c8'); rect(c, x, y + 3, w, 1, '#6f6f6f');
+  rect(c, x, y + 4, 3, 1, '#8a8a8a'); rect(c, x, y + 5, 2, 1, '#8a8a8a'); rect(c, x, y + 6, 1, 1, '#8a8a8a'); // console
+}
+
+// L'immeuble vu de profil, dessiné une fois (couleurs « plein jour ») puis teinté selon l'heure.
+// c = calque du fond ; a = calque de devant (garde-corps de son balcon, fleurs), dessiné après elle.
+function dessinerImmeuble(c, a) {
+  const r = mulberry32(17), F = G.facade;
   fenetres = [];
-  const coulMaisons = ['#e9c46a', '#e7a9a0', '#9cc5b8', '#f1e3c8', '#c9b6e4', '#e8b77a', '#a9c8e8'];
-  // -- Façades des « maisons-tubes » d'en face --
-  let x = -3;
+  // --- 1. La ville au loin (à droite) ---
+  let x = F + 2;
   while (x < W) {
-    const lw = 16 + Math.floor(r() * 14);
-    const haut = S + 7 + Math.floor(r() * Math.max(4, G.BH * 0.13));
-    const coul = coulMaisons[Math.floor(r() * coulMaisons.length)];
-    rect(c, x, haut, lw, G.rampeBas - haut, coul);
-    rect(c, x + lw - 1, haut, 1, G.rampeBas - haut, melange(coul, '#000000', 0.15));
-    rect(c, x - 1, haut, lw + 2, 2, melange(coul, '#000000', 0.25)); rect(c, x - 1, haut, lw + 2, 1, melange(coul, '#ffffff', 0.3));
-    for (let fy = haut + 5; fy < G.rampeBas - 6; fy += 9)
-      for (let fx = x + 3; fx < x + lw - 5; fx += 7) {
-        rect(c, fx, fy, 4, 5, '#3d3a4a'); rect(c, fx - 1, fy, 1, 5, '#4f7f6a'); rect(c, fx + 4, fy, 1, 5, '#4f7f6a');
-        fenetres.push({ x: fx, y: fy, allumee: r() < 0.3 });
-      }
-    if (r() < 0.4) { rect(c, x + 3, haut - 4, 5, 4, '#cfd4da'); rect(c, x + 3, haut - 4, 5, 1, '#f0f2f5'); }      // château d'eau
-    if (r() < 0.35) { rect(c, x + lw - 4, haut - 7, 1, 7, '#4a4550'); rect(c, x + lw - 6, haut - 6, 5, 1, '#4a4550'); } // antenne
-    x += lw;
+    const lw = 9 + Math.floor(r() * 10), haut = G.toit + 12 + Math.floor(r() * 26);
+    const coul = r() < 0.5 ? '#b4c0d4' : '#c2bed6';
+    rect(c, x, haut, lw, G.rue - haut, coul); rect(c, x, haut, lw, 1, melange(coul, '#ffffff', 0.3));
+    for (let fy = haut + 3; fy < G.rue - 3; fy += 4) for (let fx = x + 2; fx < x + lw - 2; fx += 3) {
+      rect(c, fx, fy, 1, 2, melange(coul, '#000000', 0.15)); fenetres.push({ x: fx, y: fy, w: 1, h: 2, allumee: r() < 0.35 });
+    }
+    if (r() < 0.4) rect(c, x + 2, haut - 3, 3, 3, melange(coul, '#000000', 0.1));
+    x += lw + (r() < 0.3 ? 2 : 0);
   }
-  // -- Poteau et fils électriques emmêlés --
-  rect(c, 6, S + 4, 3, G.rampeBas - S - 4, '#6b6570'); rect(c, 6, S + 4, 1, G.rampeBas - S - 4, '#8f8a96');
-  for (const f of G.fils) for (let xx = 0; xx < W; xx++) rect(c, xx, Math.round(yFil(f, xx)), 1, 1, '#2a2630');
-  for (let i = 0; i < 26; i++) rect(c, 4 + Math.floor(r() * 8), S + 10 + Math.floor(r() * 18), 1, 1, '#2a2630'); // nœud de fils
-  ligne(c, 7, S + 12, 3, S + 30, '#2a2630'); ligne(c, 8, S + 14, 14, S + 32, '#2a2630');
-  // -- Bougainvillier qui déborde sur la rambarde --
-  for (let bx = Math.round(W * 0.5); bx < W + 3; bx += 3) {
-    const by = G.rampeHaut - 2 + Math.floor(r() * 4);
-    ellipsePleine(c, bx, by, 2.4, 1.8, r() < 0.5 ? '#3f7a45' : '#4f8f4a');
-    if (r() < 0.8) ellipsePleine(c, bx + r() * 2 - 1, by - 1 + r() * 2, 1.6, 1.3, r() < 0.5 ? '#d94f9a' : '#f07ab8');
-    if (r() < 0.3) rect(c, bx, by + 3 + Math.floor(r() * 4), 1, 2, '#d94f9a');
+  // --- 2. Poteau, fils électriques, arbre ---
+  const P = G.poteau;
+  texture(c, P.x, P.haut, 2, G.rue - P.haut, '#6b6570', 3);
+  rect(c, P.x - 3, P.haut + 3, 8, 1, '#4a4550');
+  for (let k = 0; k < 18; k++) rect(c, P.x - 3 + Math.floor(r() * 7), P.haut + 4 + Math.floor(r() * 12), 1, 1, '#2a2630');
+  for (const f of G.fils) for (let xx = f[0]; xx <= Math.min(W, f[2]); xx++) rect(c, xx, Math.round(yFil(f, xx)), 1, 1, '#2a2630');
+  const ax = W - 17;
+  texture(c, ax, G.rue - 12, 2, 12, '#6b4a2e', 5);
+  for (const [dx, dy] of [[-4, -26], [0, -26], [-8, -22], [-4, -22], [0, -22], [4, -22], [-8, -18], [-4, -18], [0, -18], [4, -18], [-4, -14], [0, -14]])
+    texture(c, ax + dx, G.rue + dy, 4, 4, r() < 0.5 ? '#4f8f3a' : '#5a9c40', 40 + dx * 7 - dy, { v: 0.18 });
+  // --- 3. La rue ---
+  texture(c, F, G.rue, W - F, 3, '#bdb8ad', 8);
+  rect(c, 0, G.rue + 3, W, 1, '#8a857c');
+  texture(c, 0, G.rue + 4, W, H - G.rue - 4, '#4a4a54', 9, { v: 0.12 });
+  for (let dx = 2; dx < W; dx += 10) rect(c, dx, G.rue + 12, 5, 1, '#d8d4c8');
+  c.drawImage(SPR.ascii.scooter, F + 18, G.rue - SPR.ascii.scooter.height + 1);
+  // --- 4. L'immeuble (mur latéral en briques enduites de jaune « Hanoï ») ---
+  texture(c, 0, G.toit, F, G.rue - G.toit, '#e3b552', 11, { joint: '#cfa046', bw: 8, bh: 4 });
+  rect(c, F - 1, G.toit, 1, G.rue - G.toit, '#b98a34');
+  for (const y of [G.balcon, G.etage1]) { texture(c, 0, y, F, 2, '#a9a9a9', y); }
+  // Toit : parapet, château d'eau en inox, antenne, plantes
+  texture(c, 0, G.toit - 3, F + 1, 3, '#b8b8b8', 12); rect(c, 0, G.toit - 3, F + 1, 1, '#d6d6d6');
+  texture(c, 5, G.toit - 13, 11, 8, '#cfd3d9', 13, { v: 0.06 });
+  rect(c, 5, G.toit - 11, 11, 1, '#a8adb5'); rect(c, 5, G.toit - 8, 11, 1, '#a8adb5'); rect(c, 6, G.toit - 14, 9, 1, '#e8ebef');
+  rect(c, 6, G.toit - 5, 1, 2, '#6b6570'); rect(c, 14, G.toit - 5, 1, 2, '#6b6570');
+  rect(c, 26, G.toit - 15, 1, 12, '#4a4550'); rect(c, 23, G.toit - 13, 7, 1, '#4a4550'); rect(c, 24, G.toit - 10, 5, 1, '#4a4550');
+  texture(c, 34, G.toit - 6, 5, 3, '#b5653a', 14); texture(c, 33, G.toit - 11, 7, 5, '#4f8f3a', 15, { v: 0.18 });
+  // Fenêtres du mur latéral
+  fenetre(c, 10, G.toit + 7, 6, 9, r); fenetre(c, 26, G.toit + 7, 6, 9, r);
+  fenetre(c, 10, G.balcon + 5, 6, 8, r); fenetre(c, 26, G.balcon + 5, 6, 8, r);
+  // Climatiseur
+  texture(c, F - 11, G.etage1 - 9, 8, 6, '#dfe2e6', 16, { v: 0.04 });
+  for (let k = 0; k < 3; k++) rect(c, F - 10, G.etage1 - 8 + k * 2, 6, 1, '#9aa0a8');
+  // Portes-fenêtres côté façade
+  rect(c, F - 3, G.balcon - 19, 2, 19, '#3d2a20'); rect(c, F - 3, G.etage1 - 17, 2, 17, '#3d2a20');
+  // --- 5. Rez-de-chaussée : la boutique de phở ---
+  const ys = G.etage1 + 4;
+  rect(c, 7, ys - 1, 17, 9, '#3b1f1a'); rect(c, 8, ys, 15, 7, '#c8433a');
+  ecrire(c, 'PHO', 10, ys + 1, '#f5d04a'); rect(c, 21, ys + 1, 1, 1, '#f5d04a'); rect(c, 19, ys - 1, 1, 1, '#f5d04a'); // accent du « Ở »
+  const vitrine = { x: 5, y: ys + 10, w: F - 12, h: G.rue - ys - 11 };
+  rect(c, vitrine.x - 1, vitrine.y - 1, vitrine.w + 2, vitrine.h + 2, '#5c3a20');
+  texture(c, vitrine.x, vitrine.y, vitrine.w, vitrine.h, '#7a5a48', 17, { v: 0.1 });
+  fenetres.push({ ...vitrine, allumee: true });
+  // Store rayé
+  for (let i = 0; i < 15; i++) rect(c, F + i, G.etage1 + 5 + Math.floor(i / 5), 1, 3, Math.floor(i / 2) % 2 ? '#f2ece0' : '#c8433a');
+  // Petits tabourets rouges sur le trottoir
+  c.drawImage(SPR.ascii.miniTabouret, F + 2, G.rue - 5); c.drawImage(SPR.ascii.miniTabouret, F + 10, G.rue - 5);
+  // --- 6. Balcon du premier étage : plantes, linge qui sèche ---
+  dalle(c, F, G.etage1, 20, 31);
+  texture(c, F + 3, G.etage1 - 3, 5, 3, '#b5653a', 32); texture(c, F + 2, G.etage1 - 9, 7, 6, '#4f8f3a', 33, { v: 0.18 });
+  texture(c, F + 12, G.etage1 - 3, 5, 3, '#b5653a', 34); texture(c, F + 12, G.etage1 - 7, 5, 4, '#5a9c40', 35, { v: 0.18 });
+  rect(c, F + 13, G.etage1 - 8, 1, 1, '#f07ab8'); rect(c, F + 15, G.etage1 - 9, 1, 1, '#f07ab8');
+  gardeCorps(c, F, F + 20, G.etage1, 7);
+  const ligneLinge = G.balcon + 8;
+  rect(c, F, ligneLinge, 20, 1, '#e8e2d6');
+  rect(c, F + 3, ligneLinge + 1, 4, 4, '#6fa8dc'); rect(c, F + 9, ligneLinge + 1, 3, 5, '#e9c46a'); rect(c, F + 14, ligneLinge + 1, 4, 3, '#e7a9a0');
+  // --- 7. Son balcon (dernier étage) ---
+  dalle(c, F, G.balcon, 25, 41);
+  c.drawImage(SPR.ascii.miniTabouret, G.tabouret.x, G.tabouret.y);
+  c.drawImage(SPR.ascii.miniTasse, G.tasse.x, G.tasse.y);
+  gardeCorps(a, F, F + 25, G.balcon, 7);
+  // Bougainvillier qui retombe par-dessus la rambarde
+  for (const [dx, dy] of [[23, -8], [25, -6], [24, -3], [26, 0], [25, 3], [26, 7]]) {
+    ellipsePleine(a, F + dx, G.balcon + dy, 2, 1.6, '#3f7a45');
+    ellipsePleine(a, F + dx + (r() < 0.5 ? -1 : 1), G.balcon + dy, 1.4, 1.2, r() < 0.5 ? '#d94f9a' : '#f07ab8');
   }
-  // -- Garde-corps en fer forgé --
-  const fer = '#2b2733', ferClair = '#55506a';
-  rect(c, 0, G.rampeHaut, W, 3, fer); rect(c, 0, G.rampeHaut, W, 1, ferClair);
-  rect(c, 0, G.rampeBas, W, 2, fer);
-  rect(c, 0, G.rampeBas - 4, W, 1, fer);
-  const anneau = [[1, 0], [2, 0], [0, 1], [3, 1], [0, 2], [3, 2], [1, 3], [2, 3]];
-  const milieu = Math.round((G.rampeHaut + G.rampeBas) / 2) - 3;
-  for (let bx = 0; bx < W; bx += 7) {
-    rect(c, bx, G.rampeHaut + 3, 1, G.rampeBas - G.rampeHaut - 3, fer);
-    for (const [ax, ay] of anneau) rect(c, bx + 2 + ax, milieu + ay, 1, 1, fer);
-    rect(c, bx + 3, milieu - 3, 1, 3, fer); rect(c, bx + 3, milieu + 4, 1, G.rampeBas - 4 - milieu - 4, fer);
-  }
-  // Rebord en béton
-  rect(c, 0, G.rampeBas + 2, W, 2, '#b8ab98'); rect(c, 0, G.rampeBas + 2, W, 1, '#d4c8b4');
-  // -- Sol en carreaux de ciment (motif typique des maisons vietnamiennes) --
-  const carreau = creerCanvas(8, 8), cx2 = carreau.getContext('2d');
-  for (let v = 0; v < 8; v++) for (let u = 0; u < 8; u++) {
-    const d = Math.abs(u - 3.5) + Math.abs(v - 3.5);
-    let col = d < 1.5 ? '#efe4ce' : d < 2.6 ? '#b4553f' : d < 4.6 ? '#efe4ce' : '#6c8aa0';
-    if (u === 7 || v === 7) col = '#cbb99c';
-    rect(cx2, u, v, 1, 1, col);
-  }
-  c.save(); c.translate(0, G.solY); c.fillStyle = c.createPattern(carreau, 'repeat'); c.fillRect(0, 0, W, H - G.solY); c.restore();
-  rect(c, 0, G.solY, W, 3, 'rgba(40,30,30,0.18)');
-  // -- Plante en pot (à gauche) --
-  const P = G.pot;
-  const feuilles = [[4, -6, 5, 3, '#4f8f4a'], [11, -9, 5, 3, '#5fa857'], [6, -14, 4.5, 3, '#6fb35a'], [12, -17, 3.5, 2.5, '#4f8f4a'], [2, -12, 3, 2.5, '#5fa857'], [9, -21, 3, 2, '#6fb35a']];
-  ligne(c, P.x + 7, P.y, P.x + 5, P.y - 13, '#3f6f3a'); ligne(c, P.x + 8, P.y, P.x + 11, P.y - 16, '#3f6f3a'); ligne(c, P.x + 7, P.y, P.x + 9, P.y - 20, '#3f6f3a');
-  for (const [fx, fy, rx, ry, col] of feuilles) { ellipsePleine(c, P.x + fx, P.y + fy, rx, ry, col); rect(c, Math.round(P.x + fx - 1), Math.round(P.y + fy - ry + 1), 2, 1, '#8fcf72'); }
-  rect(c, P.x - 1, P.y, 17, 3, '#d27a48'); rect(c, P.x - 1, P.y, 17, 1, '#e89a68');
-  for (let i = 0; i < 9; i++) { const k = i >> 2; rect(c, P.x + k, P.y + 3 + i, 15 - 2 * k, 1, '#c0643a'); rect(c, P.x + 14 - k - 2, P.y + 3 + i, 2, 1, '#9a4c2a'); }
-  // -- Tabouret en plastique rouge + tasse d'egg coffee --
-  c.drawImage(SPR.ascii.tabouret, G.tabouret.x, G.tabouret.y);
-  c.drawImage(SPR.ascii.tasse, G.tasse.x, G.tasse.y);
-  // -- Canne à pêche appuyée contre la rambarde --
-  const B = G.baseCanne, T = G.pointe;
-  ligne(c, B.x + 1, B.y, T.x + 1, T.y, '#9a6a3e');
-  ligne(c, B.x, B.y, T.x, T.y, '#4e321c');
-  ligne(c, B.x + 1, B.y, lerp(B.x, T.x, 0.5) + 2, lerp(B.y, T.y, 0.5), '#6b4628');
-  ligne(c, B.x, B.y, lerp(B.x, T.x, 0.14), lerp(B.y, T.y, 0.14), '#d6ab70');
-  ligne(c, B.x + 1, B.y, lerp(B.x, T.x, 0.14) + 1, lerp(B.y, T.y, 0.14), '#b98a52');
-  rect(c, B.x + 2, B.y - 7, 4, 4, '#5a5f68'); rect(c, B.x + 3, B.y - 6, 2, 2, '#aab0b8');
-  rect(c, T.x - 1, T.y, 2, 1, '#d8c8a0');
 }
 
 // Étoiles (positions stables)
@@ -956,7 +1059,7 @@ function majMonde(dt) {
   }
   // Vapeur de l'egg coffee
   minuterieVapeur -= dt;
-  if (minuterieVapeur <= 0) { minuterieVapeur = rand(0.25, 0.5); particule({ x: G.tasse.x + 3 + rand(0, 3), y: G.tasse.y - 1, vy: -3.5, vx: rand(-0.6, 0.6), vie: 2.2, couleur: '#ffffff', type: 'vapeur' }); }
+  if (minuterieVapeur <= 0) { minuterieVapeur = rand(0.25, 0.5); particule({ x: G.tasse.x + 1 + rand(0, 2), y: G.tasse.y - 1, vy: -3.5, vx: rand(-0.6, 0.6), vie: 2.2, couleur: '#ffffff', type: 'vapeur' }); }
 
   for (let i = particules.length - 1; i >= 0; i--) {
     const p = particules[i]; p.vie -= dt; if (p.vie <= 0) { particules.splice(i, 1); continue; }
@@ -1026,6 +1129,7 @@ function ferrer() {
 function vibrer(motif) { if (!CONFIG.VIBRATION) return; try { navigator.vibrate && navigator.vibrate(motif); } catch (e) { } }
 
 function majJeu(dt) {
+  majPointe();
   const b = jeu.bouchon, cible = cibleBouchon();
   switch (jeu.etat) {
     case 'repos': b.x = G.pointe.x; b.y = G.pointe.y; break;
@@ -1119,9 +1223,12 @@ function dessiner() {
   c.globalAlpha = 1;
   c.restore();
 
-  // --- Le balcon (moitié basse) ---
-  c.drawImage(balconTeint, 0, 0);
+  // --- L'immeuble et elle (moitié basse) ---
+  c.drawImage(fondTeint, 0, 0);
   dessinerLanterne(c);
+  dessinerPerso(c);
+  dessinerCanne(c);
+  c.drawImage(avantTeint, 0, 0);
 
   // --- Ligne, bouchon, prise ---
   dessinerLigne(c);
@@ -1194,6 +1301,40 @@ function dessinerLanterne(c) {
   ligne(c, L.x, L.y, L.x + osc, L.y + 2, '#2a2630');
   const spr = SPR.ascii.lanterne;
   c.drawImage(teinte('lanterne', spr, melange(pal.teinteBalcon, '#ffffff', pal.nuit * 0.6)), L.x + osc - 3, L.y + 3);
+}
+
+// ---- Elle, sur son balcon ----
+function variantePerso() {
+  if (!jeu.canne && (jeu.etat === 'repos' || jeu.etat === 'carte')) return 'repos';
+  if (jeu.etat === 'remontee' && jeu.remontee.p < 0.35 && !jeu.remontee.aRetombe) return 'ferre';
+  return 'peche';
+}
+// Position de la pointe de la canne selon la pose (appelée à chaque image)
+function majPointe() {
+  const v = variantePerso();
+  if (v === 'repos') { G.mains = null; G.pointe = { ...G.canneRangee.pointe }; return; }
+  const [mx, my] = MAINS[v], hx = G.perso.x + mx, hy = G.perso.y + my;
+  G.mains = { x: hx, y: hy };
+  if (v === 'ferre') G.pointe = { x: hx + 9, y: hy - 26 };
+  else if (jeu.etat === 'touche') G.pointe = { x: hx + 18, y: hy - 19 + (Math.floor(temps * 22) % 2) };  // la canne plie
+  else G.pointe = { x: hx + 16, y: hy - 24 };
+}
+function dessinerPerso(c) {
+  const v = variantePerso(), cle = v + ((temps % 4.3) < 0.13 ? 'B' : '');   // clignement des yeux
+  const spr = teinte('perso:' + cle, SPR.perso[cle], melange(pal.teinteBalcon, '#ffffff', 0.3));
+  c.drawImage(spr, G.perso.x + (jeu.etat === 'touche' ? 1 : 0), G.perso.y);
+}
+function dessinerCanne(c) {
+  if (!G.mains) {
+    const { base, pointe } = G.canneRangee;
+    ligne(c, base.x, base.y, pointe.x, pointe.y, '#5a3a22');
+    ligne(c, base.x, base.y, lerp(base.x, pointe.x, 0.2), lerp(base.y, pointe.y, 0.2), '#c9a06a');
+    return;
+  }
+  const m = G.mains, T = G.pointe;
+  ligne(c, m.x - 3, m.y + 4, T.x, T.y, '#5a3a22');
+  ligne(c, m.x - 3, m.y + 4, m.x, m.y, '#c9a06a');
+  rect(c, m.x - 2, m.y + 3, 2, 2, '#9aa0a8');
 }
 
 function dessinerLigne(c) {
@@ -1282,7 +1423,7 @@ function afficherCarte(prise) {
   el('carte-nouveau').style.display = prise.infos.nouveau ? 'block' : 'none';
   el('carte-nom').textContent = def.nom;
   el('carte-desc').textContent = def.description;
-  el('carte-compte').textContent = prise.infos.nouveau ? 'Première prise !' : `Pêché ${prise.infos.compte} fois`;
+  el('carte-compte').textContent = prise.infos.nouveau ? TEXTES.nouvelle : TEXTES.compte(prise.infos.compte);
   el('carte-cadre').style.background = `linear-gradient(${pal.cielHaut}, ${pal.cielBas})`;
   el('carte-cadre').style.width = 'min(70vw, 260px)';
   vignette(el('carte-sprite'), prise.sprite, 200);
@@ -1300,7 +1441,7 @@ function fermerCarte() {
 function ouvrirCarnet() {
   const liste = el('carnet-liste'); liste.innerHTML = '';
   const c = completion();
-  el('carnet-progression').textContent = `${c.faits} / ${c.total} prises découvertes — ${Math.round(100 * c.faits / c.total)} %`;
+  el('carnet-progression').textContent = TEXTES.progression(c.faits, c.total);
   el('carnet-barre').style.width = (100 * c.faits / c.total) + '%';
   const sections = ORDRE_RARETES.map(r => [RARETES[r], NUAGES.filter(n => n.rarete === r)]);
   sections.push([RARETE_OBJET, OBJETS_SPECIAUX.filter(o => o.actif !== false)]);
@@ -1317,9 +1458,9 @@ function ouvrirCarnet() {
       const txt = document.createElement('div'); txt.className = 'txt';
       const nom = document.createElement('div'); nom.className = 'nom'; nom.textContent = connu ? e.nom : '???';
       const meta = document.createElement('div'); meta.className = 'meta'; meta.style.color = r.couleur;
-      meta.textContent = connu ? `${r.nom} · pêché ${n} fois` : r.nom;
+      meta.textContent = connu ? TEXTES.metaConnu(r.nom, n) : r.nom;
       const d = document.createElement('div'); d.className = 'd';
-      d.textContent = connu ? e.description : (e.indice || 'Pas encore pêché.');
+      d.textContent = connu ? e.description : (e.indice || TEXTES.pasEncore);
       txt.append(nom, meta, d); div.append(v, txt); liste.appendChild(div);
     }
   }
@@ -1353,8 +1494,8 @@ async function installerPWA() {
   if (!fichierPresent) {
     const debut = location.href.split('#')[0];
     const manifest = {
-      name: 'Pêcher dans les nuages', short_name: 'Nuages', start_url: debut, scope: debut.replace(/[^/]*$/, ''),
-      display: 'standalone', orientation: 'portrait', background_color: '#14162a', theme_color: '#5fa8e8', lang: 'fr',
+      name: 'Fishing in the Clouds', short_name: 'Clouds', start_url: debut, scope: debut.replace(/[^/]*$/, ''),
+      display: 'standalone', orientation: 'portrait', background_color: '#14162a', theme_color: '#5fa8e8', lang: 'en',
       icons: [
         { src: iconePNG(192, 0), sizes: '192x192', type: 'image/png', purpose: 'any' },
         { src: iconePNG(512, 0), sizes: '512x512', type: 'image/png', purpose: 'any' },
